@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Staff Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+/* ── DASHBOARD — COMPLETE STYLE BLOCK ── */
+:root {
+  --dash-bg: #f8fafc;
+  --dash-card: #ffffff;
+  --dash-border: #e2e8f0;
+  --dash-text: #1e293b;
+  --dash-muted: #64748b;
+  --dash-blue: #3b82f6;
+  --dash-green: #10b981;
+  --dash-gold: #f59e0b;
+  --dash-red: #ef4444;
+  --dash-purple: #8b5cf6;
+  --radius: 14px;
+  --shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+body { background: var(--dash-bg) !important; color: var(--dash-text); font-family: 'DM Sans', sans-serif; }
+
+/* ── TOP BAR ── */
+.dash-topbar { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.75rem; }
+.dash-greeting h2 { font-family:'Sora',sans-serif; font-size:1.4rem; color:var(--dash-text); margin-bottom:.15rem; }
+.dash-greeting p { color:var(--dash-muted); font-size:.88rem; }
+.live-dot { display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--dash-green); font-weight:600; }
+.live-dot::before { content:''; width:7px; height:7px; background:var(--dash-green); border-radius:50%; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+/* ── KPI GRID ── */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.1rem; margin-bottom:1.75rem; }
+.kpi-card { background:var(--dash-card); border:1px solid var(--dash-border); border-radius:var(--radius); padding:1.25rem 1.4rem; box-shadow:var(--shadow); border-top:3px solid var(--dash-blue); position:relative; overflow:hidden; }
+.kpi-card.blue  { border-top-color:var(--dash-blue); }
+.kpi-card.green { border-top-color:var(--dash-green); }
+.kpi-card.gold  { border-top-color:var(--dash-gold); }
+.kpi-card.purple{ border-top-color:var(--dash-purple); }
+.kpi-card.red   { border-top-color:var(--dash-red); }
+.kpi-icon { font-size:1.5rem; margin-bottom:.4rem; }
+.kpi-label { font-size:.75rem; font-weight:600; color:var(--dash-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.3rem; }
+.kpi-value { font-family:'Sora',sans-serif; font-size:1.6rem; font-weight:700; color:var(--dash-text); margin-bottom:.25rem; }
+.kpi-change { font-size:.78rem; font-weight:600; }
+.kpi-change.up { color:var(--dash-green); }
+.kpi-change.down { color:var(--dash-red); }
+.kpi-change.neutral { color:var(--dash-muted); }
+
+/* ── CHARTS ── */
+.charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; margin-bottom:1.75rem; }
+.charts-grid-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; margin-bottom:1.75rem; }
+.chart-card { background:var(--dash-card); border:1px solid var(--dash-border); border-radius:var(--radius); padding:1.5rem; box-shadow:var(--shadow); }
+.chart-card-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:.75rem; margin-bottom:1rem; }
+.chart-card-header h3 { font-family:'Sora',sans-serif; font-size:1rem; color:var(--dash-text); margin-bottom:.1rem; }
+.chart-card-header p { font-size:.8rem; color:var(--dash-muted); }
+.chart-toggle { display:flex; gap:.35rem; }
+.chart-toggle button { background:#f1f5f9; border:1px solid var(--dash-border); color:var(--dash-muted); padding:.3rem .75rem; border-radius:6px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:.15s; }
+.chart-toggle button.active { background:var(--dash-blue); color:#fff; border-color:var(--dash-blue); }
+.mini-stats { display:flex; gap:2rem; margin-bottom:1rem; flex-wrap:wrap; }
+.mini-stat-label { font-size:.75rem; color:var(--dash-muted); font-weight:500; }
+.mini-stat-value { font-size:1.1rem; font-weight:700; color:var(--dash-text); }
+
+/* ── ACTIVITY FEED ── */
+.activity-feed { display:flex; flex-direction:column; gap:.6rem; max-height:240px; overflow-y:auto; }
+.activity-item { display:flex; align-items:flex-start; gap:.6rem; padding:.55rem .75rem; border-radius:8px; background:#f8fafc; border:1px solid var(--dash-border); font-size:.82rem; }
+.activity-icon { font-size:1rem; flex-shrink:0; margin-top:.05rem; }
+.activity-text { flex:1; color:var(--dash-text); line-height:1.4; }
+.activity-text strong { font-weight:700; }
+.activity-time { font-size:.74rem; color:var(--dash-muted); white-space:nowrap; flex-shrink:0; }
+
+/* ── TABS ── */
+.dash-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.25rem; border-bottom:2px solid var(--dash-border); padding-bottom:.6rem; }
+.dash-tab-btn { background:transparent; border:1px solid var(--dash-border); color:var(--dash-muted); padding:.45rem 1rem; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.84rem; font-weight:600; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; gap:.4rem; }
+.dash-tab-btn:hover { background:#f1f5f9; color:var(--dash-text); }
+.dash-tab-btn.active { background:var(--dash-blue); color:#fff; border-color:var(--dash-blue); }
+.badge-count { background:rgba(255,255,255,.25); color:inherit; font-size:.7rem; font-weight:700; padding:.1rem .45rem; border-radius:50px; min-width:18px; text-align:center; }
+.dash-tab-btn:not(.active) .badge-count { background:var(--dash-border); color:var(--dash-muted); }
+
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* ── DARK TABLE WRAP ── */
+.dark-table-wrap { background:var(--dash-card); border:1px solid var(--dash-border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); margin-bottom:1.5rem; overflow-x:auto; }
+.dark-table-head { padding:1rem 1.5rem; border-bottom:1px solid var(--dash-border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; }
+.dark-table-head h3 { font-family:'Sora',sans-serif; color:var(--dash-text); font-size:1rem; margin:0; }
+.dark-table-wrap table { width:100%; border-collapse:collapse; min-width:540px; }
+.dark-table-wrap thead tr { background:#f1f5f9; }
+.dark-table-wrap th { color:var(--dash-muted); padding:.75rem 1rem; text-align:left; font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap; border-bottom:1px solid var(--dash-border); }
+.dark-table-wrap td { padding:.75rem 1rem; font-size:.85rem; color:var(--dash-text); border-bottom:1px solid var(--dash-border); vertical-align:middle; }
+.dark-table-wrap tr:last-child td { border-bottom:none; }
+.dark-table-wrap tbody tr:hover td { background:#f8fafc; }
+
+/* ── DK BADGES ── */
+.dk-badge { display:inline-block; padding:.22rem .7rem; border-radius:999px; font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+.dk-badge.approved  { background:#dcfce7; color:#166534; }
+.dk-badge.rejected  { background:#fee2e2; color:#991b1b; }
+.dk-badge.scheduled { background:#f3e8ff; color:#6b21a8; }
+.dk-badge.paid      { background:#dcfce7; color:#166534; }
+.dk-badge.pending   { background:#fef9c3; color:#854d0e; }
+.dk-badge.review    { background:#dbeafe; color:#1e40af; }
+.dk-badge.critical  { background:#fee2e2; color:#991b1b; }
+
+/* ── DK BUTTONS ── */
+.dk-btn { display:inline-flex; align-items:center; gap:.3rem; background:#f1f5f9; border:1px solid var(--dash-border); color:#475569; padding:.35rem .8rem; border-radius:7px; font-size:.8rem; font-weight:600; cursor:pointer; transition:.15s; font-family:'DM Sans',sans-serif; text-decoration:none; white-space:nowrap; }
+.dk-btn:hover { background:#e2e8f0; color:var(--dash-text); }
+.dk-btn.success { background:rgba(16,185,129,.12); color:#065f46; border-color:rgba(16,185,129,.3); }
+.dk-btn.success:hover { background:var(--dash-green); color:#fff; }
+.dk-btn.danger  { background:rgba(239,68,68,.1); color:#991b1b; border-color:rgba(239,68,68,.25); }
+.dk-btn.danger:hover  { background:var(--dash-red); color:#fff; }
+
+/* ── FORM CARD (BILLS) ── */
+.dark-form-card { background:var(--dash-card); border:1px solid var(--dash-border); border-radius:var(--radius); padding:1.5rem; box-shadow:var(--shadow); margin-bottom:1.5rem; }
+.dark-form-card h3 { font-family:'Sora',sans-serif; color:var(--dash-text); font-size:1rem; margin-bottom:.25rem; }
+.dark-form-card p { font-size:.85rem; color:var(--dash-muted); margin-bottom:1.1rem; }
+.dark-form-card label { display:block; font-size:.8rem; font-weight:600; color:var(--dash-muted); margin-bottom:.3rem; text-transform:uppercase; letter-spacing:.04em; }
+.dark-form-card input, .dark-form-card select, .dark-form-card textarea { background:#fff; color:var(--dash-text); border:1px solid #cbd5e1; border-radius:8px; padding:.55rem .85rem; width:100%; font-family:'DM Sans',sans-serif; font-size:.88rem; transition:.15s; }
+.dark-form-card input:focus, .dark-form-card select:focus { outline:none; border-color:var(--dash-blue); box-shadow:0 0 0 2px rgba(59,130,246,.15); }
+.bill-form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+
+/* ── INSTALL MODAL ── */
+.dark-modal { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:600; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+.dark-modal.hidden { display:none; }
+.dark-modal-box { background:var(--dash-card); border-radius:var(--radius); padding:1.75rem 2rem; max-width:480px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.18); max-height:90vh; overflow-y:auto; position:relative; }
+.dark-modal-box h3 { font-family:'Sora',sans-serif; color:var(--dash-text); font-size:1.15rem; margin-bottom:.3rem; }
+.dark-modal-box p { font-size:.85rem; color:var(--dash-muted); margin-bottom:1.1rem; }
+.dark-modal-close { position:absolute; top:1rem; right:1rem; background:#f1f5f9; border:none; color:var(--dash-muted); border-radius:7px; padding:.35rem .65rem; cursor:pointer; font-size:.9rem; transition:.15s; }
+.dark-modal-close:hover { background:#e2e8f0; color:var(--dash-text); }
+
+/* ── ACCESS DENIED ── */
+.access-denied-dark { text-align:center; padding:4rem 2rem; max-width:480px; margin:0 auto; }
+.access-denied-dark h2 { font-family:'Sora',sans-serif; color:var(--dash-text); margin-bottom:.75rem; }
+.access-denied-dark p { color:var(--dash-muted); margin-bottom:1.5rem; }
+
+
+/* ── DETAIL MODAL ──────────────────────────────────────────── */
+.detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:700; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.detail-overlay.hidden { display:none; }
+.detail-box { background:#fff; border-radius:16px; width:100%; max-width:680px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.22); }
+.detail-header { background:linear-gradient(135deg,#002060 0%,#1a3a7a 100%); color:#fff; padding:1.5rem 1.75rem; border-radius:16px 16px 0 0; position:sticky; top:0; z-index:1; }
+.detail-header h3 { font-family:"Sora",sans-serif; font-size:1.15rem; margin-bottom:.2rem; }
+.detail-header p { font-size:.82rem; opacity:.75; }
+.detail-close { position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; padding:.35rem .7rem; cursor:pointer; font-size:.95rem; }
+.detail-close:hover { background:rgba(255,255,255,.25); }
+.detail-body { padding:1.5rem 1.75rem; }
+.detail-section { margin-bottom:1.5rem; }
+.detail-section-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:.75rem; padding-bottom:.4rem; border-bottom:1px solid #e2e8f0; }
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.detail-field { }
+.detail-field .df-label { font-size:.72rem; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.2rem; }
+.detail-field .df-value { font-size:.9rem; color:#1e293b; font-weight:500; word-break:break-word; }
+.detail-field .df-value.big { font-size:1.1rem; font-weight:700; color:#002060; }
+.detail-desc { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:.85rem 1rem; font-size:.88rem; color:#334155; line-height:1.6; margin-top:.5rem; }
+.detail-urgency { display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .85rem; border-radius:999px; font-size:.8rem; font-weight:700; }
+.detail-urgency.critical { background:#fee2e2; color:#991b1b; }
+.detail-urgency.high { background:#fef9c3; color:#854d0e; }
+.detail-urgency.medium { background:#dbeafe; color:#1e40af; }
+.detail-urgency.low { background:#f0fdf4; color:#166534; }
+.detail-photo { width:100%; border-radius:10px; border:1px solid #e2e8f0; margin-top:.5rem; max-height:260px; object-fit:cover; cursor:pointer; }
+.detail-photo:hover { opacity:.88; }
+.detail-actions { display:flex; gap:.65rem; flex-wrap:wrap; padding:1.25rem 1.75rem; border-top:1px solid #e2e8f0; background:#f8fafc; border-radius:0 0 16px 16px; position:sticky; bottom:0; }
+.detail-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem 1.1rem; border-radius:8px; font-size:.85rem; font-weight:600; cursor:pointer; border:none; font-family:"DM Sans",sans-serif; transition:.15s; }
+.detail-btn.primary { background:#002060; color:#fff; }
+.detail-btn.primary:hover { background:#001540; }
+.detail-btn.success { background:#10b981; color:#fff; }
+.detail-btn.success:hover { background:#059669; }
+.detail-btn.danger { background:#ef4444; color:#fff; }
+.detail-btn.danger:hover { background:#dc2626; }
+.detail-btn.ghost { background:#e2e8f0; color:#475569; }
+.detail-btn.ghost:hover { background:#cbd5e1; }
+.detail-map-link { display:inline-flex; align-items:center; gap:.4rem; font-size:.82rem; color:#3b82f6; font-weight:600; text-decoration:none; margin-top:.35rem; }
+.detail-map-link:hover { text-decoration:underline; }
+
+/* ── ASSIGN GROUP MODAL ── */
+.assign-modal { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:800; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+.assign-modal.hidden { display:none; }
+.assign-modal-box { background:#fff; border-radius:16px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.22); }
+.assign-modal-header { background:linear-gradient(135deg,#002060 0%,#1a3a7a 100%); color:#fff; padding:1.25rem 1.5rem; border-radius:16px 16px 0 0; position:relative; }
+.assign-modal-header h3 { font-family:"Sora",sans-serif; font-size:1.05rem; margin:0 0 .15rem; }
+.assign-modal-header p { font-size:.8rem; opacity:.7; margin:0; }
+.assign-modal-close { position:absolute; top:.9rem; right:1rem; background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; padding:.3rem .65rem; cursor:pointer; font-size:.9rem; }
+.assign-modal-close:hover { background:rgba(255,255,255,.25); }
+.assign-modal-body { padding:1.25rem 1.5rem; }
+.group-card { border:2px solid #e2e8f0; border-radius:12px; padding:1rem 1.15rem; margin-bottom:.75rem; cursor:pointer; transition:.15s; background:#fff; }
+.group-card:hover { border-color:#3b82f6; background:#eff6ff; }
+.group-card.selected { border-color:#002060; background:#eff6ff; box-shadow:0 0 0 3px rgba(0,32,96,.12); }
+.group-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:.4rem; }
+.group-name { font-family:"Sora",sans-serif; font-size:.95rem; font-weight:700; color:#002060; }
+.group-status-badge { font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; }
+.group-status-badge.active { background:#dcfce7; color:#166534; }
+.group-status-badge.inactive { background:#f1f5f9; color:#64748b; }
+.group-leader { font-size:.8rem; color:#475569; margin-bottom:.4rem; }
+.group-members { display:flex; flex-wrap:wrap; gap:.3rem; }
+.member-pill { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:999px; font-size:.72rem; color:#475569; padding:.18rem .55rem; }
+.assign-date-row { margin-top:1rem; }
+.assign-date-row label { display:block; font-size:.78rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.35rem; }
+.assign-date-row input { width:100%; padding:.5rem .85rem; border:1px solid #cbd5e1; border-radius:8px; font-family:"DM Sans",sans-serif; font-size:.88rem; }
+.assign-notes-row { margin-top:.75rem; }
+.assign-notes-row label { display:block; font-size:.78rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.35rem; }
+.assign-notes-row textarea { width:100%; padding:.5rem .85rem; border:1px solid #cbd5e1; border-radius:8px; font-family:"DM Sans",sans-serif; font-size:.88rem; resize:vertical; }
+.assign-modal-actions { display:flex; gap:.6rem; padding:1rem 1.5rem; border-top:1px solid #e2e8f0; background:#f8fafc; border-radius:0 0 16px 16px; }
+.assigned-group-info { background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1px solid #bfdbfe; border-radius:10px; padding:.85rem 1rem; margin-top:.5rem; }
+.assigned-group-info .ag-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#1e40af; margin-bottom:.3rem; }
+.assigned-group-info .ag-name { font-family:"Sora",sans-serif; font-size:1rem; font-weight:700; color:#002060; margin-bottom:.2rem; }
+.assigned-group-info .ag-sub { font-size:.8rem; color:#3b82f6; }
+
+/* ── REPORTS TABLE ENHANCED ── */
+.report-row-clickable { cursor:pointer; }
+.report-row-clickable:hover td { background:#eff6ff !important; }
+.inline-address { font-size:.78rem; color:#64748b; margin-top:.1rem; display:flex; align-items:center; gap:.25rem; }
+@media(max-width:600px){ .detail-grid{ grid-template-columns:1fr; } .detail-box{ max-height:100vh; border-radius:0; } }
+
+/* ── FILE VIEWER MODAL ── */
+.fileview-overlay { position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:900; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.fileview-overlay.hidden { display:none; }
+.fileview-box { background:#1e293b; border-radius:16px; width:100%; max-width:860px; max-height:94vh; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.5); display:flex; flex-direction:column; }
+.fileview-header { background:#0f172a; padding:.9rem 1.25rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+.fileview-header span { color:#e2e8f0; font-size:.9rem; font-weight:600; }
+.fileview-header-actions { display:flex; gap:.5rem; }
+.fileview-close { background:rgba(255,255,255,.1); border:none; color:#94a3b8; border-radius:8px; padding:.35rem .75rem; cursor:pointer; font-size:.85rem; transition:.15s; }
+.fileview-close:hover { background:rgba(255,255,255,.18); color:#fff; }
+.fileview-body { flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; min-height:300px; background:#0f172a; }
+.fileview-body img { max-width:100%; max-height:82vh; object-fit:contain; border-radius:4px; }
+.fileview-body iframe { width:100%; height:80vh; border:none; background:#fff; border-radius:4px; }
+.fileview-no-preview { color:#64748b; text-align:center; padding:3rem; }
+.fileview-no-preview .fv-icon { font-size:3rem; margin-bottom:.75rem; }
+.fileview-no-preview p { font-size:.9rem; margin-bottom:1rem; }
+
+/* ── DOCS GALLERY (inside detail modals) ── */
+.docs-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.65rem; margin-top:.5rem; }
+.doc-thumb { border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; cursor:pointer; transition:.15s; background:#f8fafc; position:relative; }
+.doc-thumb:hover { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+.doc-thumb img { width:100%; height:90px; object-fit:cover; display:block; }
+.doc-thumb .doc-thumb-label { font-size:.7rem; font-weight:700; color:#475569; padding:.35rem .5rem; background:#f1f5f9; border-top:1px solid #e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.doc-thumb-file { width:100%; height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2rem; background:#f8fafc; }
+.doc-thumb-file span { font-size:.65rem; font-weight:700; color:#64748b; margin-top:.25rem; text-transform:uppercase; }
+
+/* ── RECEIPT PANEL (inside detail modals) ── */
+.receipt-panel { background:linear-gradient(135deg,#faf5ff,#ede9fe); border:1.5px solid #c4b5fd; border-radius:12px; padding:1rem 1.1rem; margin-top:.5rem; }
+.receipt-panel-title { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#6d28d9; margin-bottom:.65rem; }
+.receipt-item { display:flex; align-items:center; gap:.75rem; padding:.55rem .75rem; background:#fff; border-radius:8px; border:1px solid #ddd6fe; margin-bottom:.45rem; cursor:pointer; transition:.15s; }
+.receipt-item:last-child { margin-bottom:0; }
+.receipt-item:hover { border-color:#7c3aed; background:#f5f3ff; }
+.receipt-item-icon { font-size:1.3rem; flex-shrink:0; }
+.receipt-item-info { flex:1; min-width:0; }
+.receipt-item-info .ri-name { font-size:.82rem; font-weight:600; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.receipt-item-info .ri-sub { font-size:.72rem; color:#6d28d9; }
+.receipt-item-view { font-size:.75rem; font-weight:700; color:#7c3aed; flex-shrink:0; }
+.no-receipt { color:#94a3b8; font-size:.82rem; font-style:italic; }
+
+/* ── STATUS DROPDOWN INLINE ── */
+.status-select-wrap { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:.5rem; }
+.status-select-wrap select { padding:.42rem .75rem; border:1.5px solid #cbd5e1; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; background:#fff; color:#1e293b; transition:.15s; }
+.status-select-wrap select:focus { outline:none; border-color:var(--dash-blue); }
+.status-apply-btn { background:#002060; color:#fff; border:none; border-radius:8px; padding:.42rem 1rem; font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:700; cursor:pointer; transition:.15s; }
+.status-apply-btn:hover { background:#001540; }
+
+/* ── BILL DETAIL MODAL ── */
+.bill-detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:700; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.bill-detail-overlay.hidden { display:none; }
+.bill-detail-box { background:#fff; border-radius:16px; width:100%; max-width:620px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.22); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .charts-grid { grid-template-columns:1fr; }
+  .kpi-grid { grid-template-columns:repeat(2,1fr); }
+  .bill-form-row { grid-template-columns:1fr; }
+  #tab-bills > div:nth-child(2) { grid-template-columns:1fr !important; }
+}
+@media(max-width:560px) {
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .dash-tabs { gap:.35rem; }
+  .dash-tab-btn { font-size:.76rem; padding:.4rem .65rem; }
+}
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<!-- ACCESS DENIED -->
+<div class="page-wrap" id="accessDenied" style="display:none;">
+  <div class="access-denied-dark">
+    <div style="font-size:4rem;margin-bottom:1rem;">🚫</div>
+    <h2>Access Restricted</h2>
+    <p>The Staff Dashboard is only accessible to NORECO I staff members and administrators.</p>
+    <a href="login.html" class="btn btn-blue">Go to Login</a>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="page-wrap" id="mainContent" style="display:none;">
+
+  <!-- Top bar -->
+  <div class="dash-topbar">
+    <div class="dash-greeting">
+      <h2>Good day, <span id="staffName">Staff</span> 👋</h2>
+      <p id="dashDate" style="margin-bottom:.4rem;"></p>
+      <span class="live-dot">Live — Real-time updates active</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="userRoleBadge" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25);padding:.3rem .8rem;border-radius:50px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;"></span>
+    </div>
+  </div>
+
+  <!-- Quick Work Summary -->
+  <div class="kpi-grid">
+    <div class="kpi-card red">
+      <div class="kpi-icon">⚠️</div>
+      <div class="kpi-label">Open Reports</div>
+      <div class="kpi-value" id="kpiReports">0</div>
+      <div class="kpi-change neutral" id="kpiReportsChange">pending / in-progress</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-icon">🔌</div>
+      <div class="kpi-label">New Connections</div>
+      <div class="kpi-value" id="kpiConns">0</div>
+      <div class="kpi-change neutral" id="kpiConnsChange">pending payment</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-icon">💡</div>
+      <div class="kpi-label">Unpaid Bills</div>
+      <div class="kpi-value" id="kpiBills">0</div>
+      <div class="kpi-change neutral">outstanding</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-icon">📅</div>
+      <div class="kpi-label">Seminar Registrations</div>
+      <div class="kpi-value" id="kpiSeminars">0</div>
+      <div class="kpi-change neutral">total registered</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-label">Active Outages</div>
+      <div class="kpi-value" id="kpiOutages">0</div>
+      <div class="kpi-change neutral">posted</div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Feed -->
+  <div class="chart-card" style="margin-bottom:1.75rem;">
+    <div class="chart-card-header">
+      <div>
+        <h3>🕐 Recent Activity</h3>
+        <p>Live system events</p>
+      </div>
+      <span class="live-dot">Live updates</span>
+    </div>
+    <div class="activity-feed" id="activityFeed">
+      <div style="color:var(--dash-muted);font-size:.85rem;text-align:center;padding:1rem;">No recent activity.</div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="dash-tabs">
+    <button class="dash-tab-btn active" onclick="switchTab('reports',this)">⚠️ Reports <span class="badge-count" id="tabCountReports">0</span></button>
+    <button class="dash-tab-btn" onclick="switchTab('installation',this)">🔧 Installation <span class="badge-count" id="tabCountInstall">0</span></button>
+    <button class="dash-tab-btn" onclick="switchTab('bills',this)">💡 Bills</button>
+    <button class="dash-tab-btn" onclick="switchTab('newconns',this)">🔌 Connects <span class="badge-count" id="tabCountConns">0</span></button>
+    <button class="dash-tab-btn" onclick="switchTab('seminars',this)">📅 Seminars <span class="badge-count" id="tabCountSeminars">0</span></button>
+    <button class="dash-tab-btn" onclick="switchTab('ratings',this)">⭐ Ratings</button>
+    <button class="dash-tab-btn" onclick="switchTab('outages',this)">⚡ Outages</button>
+  </div>
+
+  <!-- TAB: REPORTS -->
+  <div id="tab-reports" class="tab-content active">
+    <div class="dark-table-wrap">
+      <div class="dark-table-head">
+        <h3>⚠️ Service Requests — Full Details</h3>
+        <span style="font-size:.8rem;color:var(--dash-muted);">Click any row to view complete report details</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Ref #</th>
+            <th>Problem Type</th>
+            <th>Resident & Contact</th>
+            <th>Location</th>
+            <th>Urgency</th>
+            <th>Assigned Group</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="reportsTableBody">
+            <tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No reports yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: INSTALLATION (from approved new_connections) -->
+  <div id="tab-installation" class="tab-content">
+    <div class="dark-table-wrap">
+      <div class="dark-table-head"><h3>🔧 Schedule Electricity Installation — Approved Connections</h3></div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Ref #</th><th>Applicant</th><th>Connection Type</th><th>Status</th><th>Electrician (Chosen)</th><th>Install Date</th><th>Actions</th></tr></thead>
+        <tbody id="installTableBody"><tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No approved connections to schedule.</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: BILLS -->
+  <div id="tab-bills" class="tab-content">
+
+    <!-- Rate Status Banner -->
+    <div id="rateStatusBanner" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.75rem 1.1rem;margin-bottom:1.25rem;font-size:.84rem;color:#166534;display:flex;align-items:center;gap:.6rem;">
+      <span>⚡</span><span id="rateStatusText">Loading active rate table…</span>
+    </div>
+
+    <!-- Two-column layout: Left = form, Right = live preview -->
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;align-items:start;margin-bottom:1.5rem;">
+
+      <!-- ── LEFT: INPUT FORM ─────────────────────────────────── -->
+      <div class="dark-form-card" style="margin-bottom:0;">
+        <h3 style="display:flex;align-items:center;gap:.5rem;">
+          <span style="background:linear-gradient(135deg,#002060,#1a3a7a);color:#fff;border-radius:8px;padding:.3rem .55rem;font-size:.9rem;">💡</span>
+          Add Bill for Resident
+        </h3>
+        <p style="margin:.25rem 0 1rem;">Bills are linked to residents by <strong>Meter Serial Number</strong>. Amount auto-calculates from readings × rate table.</p>
+
+        <!-- ① Resident Info -->
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dash-blue);margin-bottom:.5rem;">① Resident Info</div>
+        <div class="bill-form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Meter Serial Number (SN) * <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— stamped on meter box</span></label>
+            <input type="text" id="billMeterSN" placeholder="e.g. SN-000001" style="text-transform:uppercase;font-weight:700;letter-spacing:.04em;" oninput="this.value=this.value.toUpperCase();billLiveCalc()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Resident Name</label>
+            <input type="text" id="billResidentName" placeholder="e.g. Juan dela Cruz" oninput="billLiveCalc()">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:.65rem;">
+          <label>Resident Email <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— for sending bill via email</span></label>
+          <input type="email" id="billResidentEmail" placeholder="e.g. juan@gmail.com">
+        </div>
+
+        <!-- ② Billing Period -->
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dash-blue);margin:.75rem 0 .5rem;">② Billing Period</div>
+        <div class="bill-form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Bill Month *</label>
+            <select id="billPeriod" onchange="onBillMonthChange()" style="width:100%;padding:.48rem .75rem;border:1px solid var(--dash-border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;background:#fff;">
+              <option value="May 2026">May 2026</option>
+              <option value="April 2026">April 2026</option>
+              <option value="March 2026">March 2026</option>
+              <option value="February 2026">February 2026</option>
+              <option value="January 2026">January 2026</option>
+              <option value="December 2025">December 2025</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Due Date *</label>
+            <input type="date" id="billDueDate">
+          </div>
+        </div>
+
+        <!-- ③ Meter Readings -->
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dash-blue);margin:.75rem 0 .5rem;">③ Meter Readings</div>
+        <div style="background:#f8fafc;border:1px solid var(--dash-border);border-radius:10px;padding:.85rem;margin-bottom:.75rem;">
+          <div class="bill-form-row" style="margin-bottom:.65rem;">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Previous Reading (kWh) <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— last month's</span></label>
+              <input type="number" id="billPrevReading" placeholder="e.g. 1589" oninput="autoCalcFromReadings()" style="font-size:1rem;font-weight:700;">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Present Reading (kWh) <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— this month's</span></label>
+              <input type="number" id="billPresReading" placeholder="e.g. 1605" oninput="autoCalcFromReadings()" style="font-size:1rem;font-weight:700;">
+            </div>
+          </div>
+          <div class="bill-form-row" style="margin-bottom:.65rem;">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Meter Multiplier (Mult) <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— usually 1 for residential</span></label>
+              <select id="billMult" onchange="autoCalcFromReadings()" style="width:100%;padding:.48rem .75rem;border:1px solid var(--dash-border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;background:#fff;">
+                <option value="1" selected>1 — Standard Residential</option>
+                <option value="2">2</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Coreloss <span style="font-weight:400;color:var(--dash-muted);font-size:.72rem;">— from bill (usually 0.0)</span></label>
+              <input type="number" id="billCoreloss" placeholder="0.0" value="0" step="0.1">
+            </div>
+          </div>
+          <!-- kWh + Amount computed display -->
+          <div style="display:flex;align-items:center;gap:.75rem;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;">
+            <div style="flex:1;">
+              <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;">kWh Consumed</div>
+              <div style="display:flex;align-items:baseline;gap:.3rem;">
+                <span style="font-family:'Sora',sans-serif;font-size:1.6rem;font-weight:800;color:#002060;" id="kwhDisplay">0</span>
+                <span style="font-size:.8rem;color:#94a3b8;">kWh</span>
+              </div>
+              <div style="font-size:.69rem;color:#94a3b8;" id="kwhFormula">( — − — ) × 1</div>
+            </div>
+            <div style="font-size:1.4rem;color:#e2e8f0;">→</div>
+            <div style="flex:1;text-align:right;">
+              <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;" id="rateCalcNote">Computed Amount</div>
+              <div style="font-family:'Sora',sans-serif;font-size:1.6rem;font-weight:800;color:#15803d;" id="amountDisplay">₱0.00</div>
+            </div>
+          </div>
+          <input type="hidden" id="billKwh">
+          <input type="hidden" id="billAmount">
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+          <button class="dk-btn success" style="padding:.6rem 1.35rem;font-size:.9rem;font-weight:700;" onclick="addBillForResident()" id="addBillBtn">➕ Add Bill</button>
+          <button class="dk-btn" onclick="clearBillForm()" style="padding:.6rem 1rem;font-size:.85rem;">✕ Clear Form</button>
+          <span id="billFormMsg" style="font-size:.82rem;"></span>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: LIVE PREVIEW PANEL ────────────────────────── -->
+      <div style="background:linear-gradient(160deg,#001540,#002d7a);border-radius:12px;padding:1.35rem;color:#fff;box-shadow:0 8px 32px rgba(0,32,96,.3);position:sticky;top:1rem;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:.2rem;">Live Bill Preview</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:1rem;min-height:1.4rem;" id="previewResName">— Resident —</div>
+
+        <!-- Power Charges -->
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:.35rem;">Power Charges</div>
+        <div style="margin-bottom:.75rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.06);"><span>Generation</span><span id="pv_gen">₱0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.06);"><span>Transmission</span><span id="pv_trans">₱0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.06);"><span>System Loss</span><span id="pv_sys">₱0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.06);"><span>Distribution</span><span id="pv_dist">₱0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;"><span>Supply + Metering</span><span id="pv_supply">₱0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.79rem;font-weight:700;color:#60a5fa;padding:.28rem 0;border-top:1px solid rgba(255,255,255,.13);margin-top:.2rem;"><span>Subtotal Charges</span><span id="pv_subtotal">₱0.00</span></div>
+        </div>
+
+        <!-- VAT -->
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:.35rem;">VAT</div>
+        <div style="margin-bottom:.75rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;"><span>VAT (Gen + Trans + Dist)</span><span id="pv_vat">₱0.00</span></div>
+        </div>
+
+        <!-- Universal Charges -->
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:.35rem;">Universal Charges</div>
+        <div style="margin-bottom:.85rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.77rem;color:rgba(255,255,255,.65);padding:.18rem 0;"><span>UC + Adjustments</span><span id="pv_uc">₱0.00</span></div>
+        </div>
+
+        <!-- Total -->
+        <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:.85rem 1rem;margin-bottom:1rem;">
+          <div style="font-size:.67rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.15rem;">Total Amount Due</div>
+          <div style="font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;color:#fbbf24;" id="pv_total">₱0.00</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:.15rem;" id="pv_kwh_label">0 kWh consumed</div>
+        </div>
+
+        <!-- Email -->
+        <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:.85rem;">
+          <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:.35rem;">📧 Send Bill via Email</div>
+          <div style="font-size:.73rem;color:rgba(255,255,255,.5);margin-bottom:.55rem;">Sends SOA summary to the resident's email address.</div>
+          <button id="sendEmailBtn" onclick="sendBillEmail()"
+            style="width:100%;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.35);color:#fbbf24;border-radius:8px;padding:.5rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;">
+            📧 Send Bill to Email
+          </button>
+          <div id="emailMsg" style="font-size:.72rem;margin-top:.35rem;text-align:center;color:rgba(255,255,255,.45);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bills Table -->
+    <div class="dark-table-wrap">
+      <div class="dark-table-head">
+        <h3>📄 All Bills — Real-time</h3>
+        <input type="text" id="billSearchInput" placeholder="🔍 Search by Meter SN or period…" style="padding:.4rem .75rem;border:1px solid var(--dash-border);border-radius:7px;font-size:.82rem;font-family:'DM Sans',sans-serif;background:#f8fafc;width:220px;" oninput="filterBillsTable(this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Meter SN</th><th>Resident</th><th>Bill Month</th><th>kWh</th><th>Amount</th><th>Due</th><th>Status</th><th>Receipt</th><th>Actions</th></tr></thead>
+        <tbody id="allBillsBody"><tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: NEW CONNECTIONS -->
+  <div id="tab-newconns" class="tab-content">
+    <div class="dark-table-wrap">
+      <div class="dark-table-head"><h3>🔌 Connect Applications</h3></div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Ref #</th><th>Applicant</th><th>Type</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="newconnsTableBody"><tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: RATINGS -->
+  <div id="tab-ratings" class="tab-content">
+    <div class="dark-table-wrap">
+      <div class="dark-table-head"><h3>⭐ Group Ratings & Feedback</h3></div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Request Ref</th><th>Rating</th><th>Group</th><th>Leader</th><th>Highlights</th><th>Comments</th><th>Date</th></tr></thead>
+        <tbody id="ratingsTableBody"><tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SEMINARS (Staff View) -->
+  <div id="tab-seminars" class="tab-content">
+    <!-- Post New Seminar -->
+    <div class="dark-table-wrap" style="margin-bottom:1.5rem;">
+      <div class="dark-table-head"><h3>➕ Post New Seminar</h3></div>
+      <div style="padding:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Seminar Title <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="semTitle" placeholder="e.g. Electrical Safety for New Connections"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Date <span style="color:#ef4444;">*</span></label>
+          <input type="date" id="semDate"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Time <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="semTime" placeholder="e.g. 8:00 AM – 12:00 PM"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Venue / Location <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="semVenue" placeholder="e.g. NORECO I Main Office, Canlaon City"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Available Slots <span style="color:#ef4444;">*</span></label>
+          <input type="number" id="semSlots" placeholder="e.g. 30" min="1"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Description</label>
+          <input type="text" id="semDesc" placeholder="Brief description of the seminar"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;">
+          <button onclick="postSeminar()" id="postSeminarBtn"
+            style="background:linear-gradient(135deg,#002060,#1a3a7a);color:#fff;border:none;padding:.6rem 1.5rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">
+            📅 Post Seminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seminars + registrations list -->
+    <div class="dark-table-wrap">
+      <div class="dark-table-head"><h3>📋 All Seminars & Registrations</h3></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Venue</th><th>Slots</th><th>Registered</th><th>Actions</th></tr></thead>
+          <tbody id="seminarsTableBody"><tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No seminars posted yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Registrations detail panel -->
+    <div class="dark-table-wrap" style="margin-top:1.5rem;">
+      <div class="dark-table-head">
+        <h3>👥 Registrations — <span id="semRegsTitle" style="color:var(--dash-muted);font-weight:500;">Select a seminar above to see registrations</span></h3>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Registered On</th><th>Status</th></tr></thead>
+          <tbody id="semRegsBody"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--dash-muted);">—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: OUTAGES -->
+  <div id="tab-outages" class="tab-content">
+
+    <!-- Post New Outage Form -->
+    <div class="dark-table-wrap" style="margin-bottom:1.5rem;">
+      <div class="dark-table-head">
+        <h3>⚡ Post Power Interruption</h3>
+      </div>
+      <div style="padding:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Affected Area <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="outageArea" placeholder="e.g. Canlaon City Line Section, Brgy. Panubigan"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Date of Interruption <span style="color:#ef4444;">*</span></label>
+          <input type="date" id="outageDate"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Time <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="outageTime" placeholder="e.g. 8:00 AM – 5:00 PM"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Reason / Activity <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="outageReason" placeholder="e.g. Rehabilitation and replacement of utility poles"
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;">
+        </div>
+
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:.78rem;font-weight:700;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Additional Details</label>
+          <textarea id="outageDetails" rows="3" placeholder="Additional notes or affected barangays..."
+            style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;resize:vertical;"></textarea>
+        </div>
+
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;">
+          <button onclick="postOutage()" id="postOutageBtn"
+            style="background:linear-gradient(135deg,#002060,#1a3a7a);color:#fff;border:none;padding:.6rem 1.5rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">
+            ⚡ Post Interruption
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Posted Outages List -->
+    <div class="dark-table-wrap">
+      <div class="dark-table-head"><h3>📋 Posted Interruptions</h3></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Affected Area</th>
+              <th>Reason</th>
+              <th>Posted By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="outagesTableBody">
+            <tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<!-- Install Modal -->
+<div class="dark-modal hidden" id="installModal">
+  <div class="dark-modal-box">
+    <button class="dark-modal-close" onclick="closeInstallModal()">✕</button>
+    <h3>📅 Schedule Installation</h3>
+    <p id="installPermitLabel" style="color:var(--dash-muted);font-size:.85rem;margin-bottom:1.1rem;"></p>
+
+    <!-- Installation Date -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:.8rem;font-weight:600;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Installation Date *</label>
+      <input type="date" id="installDate" style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;">
+    </div>
+
+    <!-- Electrician section — dynamic -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:.8rem;font-weight:600;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">Assign Electrician *</label>
+      <div id="installElecSection">
+        <!-- filled by openInstallModal() -->
+        <div style="color:var(--dash-muted);font-size:.85rem;text-align:center;padding:1rem;">Loading…</div>
+      </div>
+      <!-- Hidden field that holds the final technician name for confirmInstall() -->
+      <input type="hidden" id="installTech">
+    </div>
+
+    <!-- Notes -->
+    <div style="margin-bottom:1.25rem;">
+      <label style="display:block;font-size:.8rem;font-weight:600;color:var(--dash-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Notes</label>
+      <textarea id="installNotes" rows="2" placeholder="Special instructions…" style="width:100%;padding:.55rem .85rem;border:1px solid #cbd5e1;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;resize:vertical;"></textarea>
+    </div>
+
+    <button class="dk-btn success" style="width:100%;justify-content:center;padding:.65rem;font-size:.9rem;" onclick="confirmInstall()" id="confirmInstallBtn">✓ Confirm Schedule</button>
+  </div>
+</div>
+
+
+<!-- ── REPORT DETAIL MODAL ──────────────────────────────────── -->
+<div class="detail-overlay hidden" id="reportDetailModal">
+  <div class="detail-box">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeReportDetail()">✕</button>
+      <h3 id="rdmTitle">Service Request Details</h3>
+      <p id="rdmSubtitle">Loading…</p>
+    </div>
+    <div class="detail-body" id="rdmBody"><!-- filled dynamically --></div>
+    <div class="detail-actions" id="rdmActions"><!-- filled dynamically --></div>
+  </div>
+</div>
+
+<!-- ── PERMIT DETAIL MODAL ─────────────────────────────────── -->
+<div class="detail-overlay hidden" id="permitDetailModal">
+  <div class="detail-box">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closePermitDetail()">✕</button>
+      <h3 id="pdmTitle">Permit Application Details</h3>
+      <p id="pdmSubtitle">Loading…</p>
+    </div>
+    <div class="detail-body" id="pdmBody"><!-- filled dynamically --></div>
+    <div class="detail-actions" id="pdmActions"><!-- filled dynamically --></div>
+  </div>
+</div>
+
+<!-- ── NEW CONNECTION DETAIL MODAL ────────────────────────── -->
+<div class="detail-overlay hidden" id="connDetailModal">
+  <div class="detail-box">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeConnDetail()">✕</button>
+      <h3 id="cdmTitle">New Connection Details</h3>
+      <p id="cdmSubtitle">Loading…</p>
+    </div>
+    <div class="detail-body" id="cdmBody"></div>
+    <div class="detail-actions" id="cdmActions"></div>
+  </div>
+</div>
+
+<!-- ── ASSIGN MAINTENANCE GROUP MODAL ────────────────────────── -->
+<div class="assign-modal hidden" id="assignGroupModal">
+  <div class="assign-modal-box">
+    <div class="assign-modal-header">
+      <button class="assign-modal-close" onclick="closeAssignModal()">✕</button>
+      <h3>🔧 Assign Maintenance Group</h3>
+      <p id="assignModalSubtitle">Select a group to dispatch to this report</p>
+    </div>
+    <div class="assign-modal-body">
+      <div id="groupCardsContainer">
+        <div style="text-align:center;padding:2rem;color:#94a3b8;">Loading maintenance groups…</div>
+      </div>
+      <div class="assign-date-row">
+        <label>Target Dispatch Date *</label>
+        <input type="date" id="assignDispatchDate">
+      </div>
+      <div class="assign-notes-row">
+        <label>Dispatch Notes (optional)</label>
+        <textarea id="assignNotes" rows="2" placeholder="Special instructions for the team…"></textarea>
+      </div>
+    </div>
+    <div class="assign-modal-actions">
+      <button class="detail-btn ghost" onclick="closeAssignModal()" style="flex:1;">✕ Cancel</button>
+      <button class="detail-btn primary" id="confirmAssignBtn" onclick="confirmAssign()" style="flex:2;">✓ Confirm Assignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── UNIVERSAL FILE VIEWER MODAL ────────────────────────────── -->
+<div class="fileview-overlay hidden" id="fileViewerModal">
+  <div class="fileview-box">
+    <div class="fileview-header">
+      <span id="fvLabel">Viewing file…</span>
+      <div class="fileview-header-actions">
+        <a id="fvOpenLink" href="#" target="_blank" class="fileview-close" style="color:#93c5fd;">🔗 Open in Tab</a>
+        <button class="fileview-close" onclick="closeFileViewer()">✕ Close</button>
+      </div>
+    </div>
+    <div class="fileview-body" id="fvBody">
+      <div class="fileview-no-preview"><div class="fv-icon">📄</div><p>Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BILL DETAIL MODAL ───────────────────────────────────────── -->
+<div class="bill-detail-overlay hidden" id="billDetailModal">
+  <div class="bill-detail-box">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeBillDetail()">✕</button>
+      <h3 id="bdmTitle">Bill Details</h3>
+      <p id="bdmSubtitle"></p>
+    </div>
+    <div class="detail-body" id="bdmBody"></div>
+    <div class="detail-actions" id="bdmActions"></div>
+  </div>
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+
+<script src="script.js"></script>
+<script type="module">
+import { db, collection, addDoc, getDocs, getDoc, onSnapshot, doc,
+         updateDoc, deleteDoc, query, orderBy, serverTimestamp, where } from './firebase-config.js';
+import { uploadFile } from './supabase-config.js';
+
+let allBillsCache = [];
+
+// ── AUTH GUARD ──────────────────────────────────────────────────
+const user = JSON.parse(localStorage.getItem('ecmsUser') || 'null');
+if (!user || (user.role !== 'staff' && user.role !== 'admin')) {
+  document.getElementById('accessDenied').style.display = 'block';
+} else {
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('staffName').textContent = user.name || user.email;
+  document.getElementById('userRoleBadge').textContent = user.role;
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-PH', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+// ── TAB SWITCHING ───────────────────────────────────────────────
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+};
+
+// ── ACTIVITY FEED ────────────────────────────────────────────────
+const activityItems = [];
+function pushActivity(icon, text, time) {
+  activityItems.unshift({ icon, text, time });
+  if (activityItems.length > 8) activityItems.pop();
+  document.getElementById('activityFeed').innerHTML = activityItems.map(a =>
+    `<div class="activity-item">
+      <span class="activity-icon">${a.icon}</span>
+      <span class="activity-text">${a.text}</span>
+      <span class="activity-time">${a.time}</span>
+    </div>`
+  ).join('') || '<div style="color:var(--dash-muted);font-size:.85rem;text-align:center;padding:1rem;">No recent activity.</div>';
+}
+function timeAgo(date) {
+  const diff = (Date.now() - date.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return date.toLocaleDateString('en-PH', { month:'short', day:'numeric' });
+}
+
+// ── REALTIME LISTENERS ───────────────────────────────────────────
+let allReportDocs = [];
+let allPermitDocs = [];
+
+// Payments
+onSnapshot(query(collection(db,'payments')), snap => {
+  const data = snap.docs.map(d => d.data());
+  const unpaid = snap.docs.filter(d => d.data().status !== 'Paid').length;
+  document.getElementById('kpiBills').textContent = unpaid;
+  snap.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const p = change.doc.data();
+      const t = p.paidAt?.toDate ? p.paidAt.toDate() : new Date();
+      pushActivity('💳', `Payment of <strong>₱${Number(p.amount||0).toLocaleString()}</strong> via ${p.method||'online'}`, timeAgo(t));
+    }
+  });
+});
+
+// Permits — removed (building permits tab removed)
+// Kept for backward-compat KPI only if needed
+
+// Reports
+onSnapshot(query(collection(db,'reports')), snap => {
+  allReportDocs = snap.docs.map(d => d.data());
+  const pending = allReportDocs.filter(r => r.status === 'Pending' || r.status === 'In Progress').length;
+  document.getElementById('kpiReports').textContent = pending;
+  document.getElementById('kpiReportsChange').textContent = pending + ' pending / in-progress';
+  document.getElementById('kpiReportsChange').className = 'kpi-change ' + (pending > 0 ? 'down' : 'up');
+  document.getElementById('tabCountReports').textContent = snap.size;
+  renderReports(snap.docs);
+  snap.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const r = change.doc.data();
+      const t = r.createdAt?.toDate ? r.createdAt.toDate() : new Date();
+      pushActivity('⚠️', `New report: <strong>${r.type}</strong> — ${r.name}`, timeAgo(t));
+    }
+  });
+});
+
+// Ratings
+onSnapshot(query(collection(db,'ratings')), snap => {
+  renderRatings(snap.docs);
+});
+
+// New Connections
+onSnapshot(query(collection(db,'new_connections')), snap => {
+  const data = snap.docs.map(d => d.data());
+  const pending = data.filter(c => c.status === 'pending_payment' || c.status === 'Submitted' || c.status === 'Under Review').length;
+  document.getElementById('kpiConns').textContent = pending;
+  document.getElementById('kpiConnsChange').textContent = pending + ' pending payment';
+  document.getElementById('kpiConnsChange').className = 'kpi-change ' + (pending > 0 ? 'down' : 'up');
+  document.getElementById('tabCountConns').textContent = snap.size;
+  renderNewConns(snap.docs);
+  renderInstallation(snap.docs); // Installation tab is driven by new_connections
+  snap.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const c = change.doc.data();
+      const t = c.createdAt?.toDate ? c.createdAt.toDate() : new Date();
+      pushActivity('🔌', `New connection request: <strong>${c.applicantName||c.name||'—'}</strong>`, timeAgo(t));
+    }
+  });
+});
+
+// Seminars
+onSnapshot(query(collection(db,'seminars')), snap => {
+  document.getElementById('tabCountSeminars').textContent = snap.size;
+  renderSeminars(snap.docs);
+  snap.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const s = change.doc.data();
+      pushActivity('📅', `Seminar posted: <strong>${s.title}</strong> on ${s.date}`, 'just now');
+    }
+  });
+});
+
+// Seminar Registrations — for KPI counter + activity
+onSnapshot(query(collection(db,'seminar_registrations')), snap => {
+  document.getElementById('kpiSeminars').textContent = snap.size;
+  snap.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const s = change.doc.data();
+      const t = s.createdAt?.toDate ? s.createdAt.toDate() : new Date();
+      pushActivity('📅', `Seminar registration: <strong>${s.name}</strong> — ${s.title||'—'}`, timeAgo(t));
+    }
+  });
+});
+
+// Bills
+onSnapshot(query(collection(db,'bills')), snap => {
+  renderAllBills(snap.docs);
+});
+
+// Outages KPI
+onSnapshot(query(collection(db,'interruptions')), snap => {
+  document.getElementById('kpiOutages').textContent = snap.size;
+});
+
+// ── RENDER FUNCTIONS ─────────────────────────────────────────────
+function badgeClass(status) {
+  if (!status) return 'review';
+  const s = status.toLowerCase();
+  if (s.includes('approved') || s.includes('connected') || s.includes('completed')) return 'approved';
+  if (s.includes('reject')) return 'rejected';
+  if (s.includes('schedul')) return 'scheduled';
+  if (s.includes('paid')) return 'paid';
+  if (s.includes('critical')) return 'critical';
+  return 'review';
+}
+
+function renderPermits(docs) {
+  const tb = document.getElementById('permitsTableBody');
+  if (!docs.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No permits yet.</td></tr>'; return; }
+  window._permitDocs = {};
+  docs.forEach(d => { window._permitDocs[d.id] = d; });
+
+  tb.innerHTML = docs.map(d => {
+    const p = d.data(); const id = d.id;
+    const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+    const canAct = p.status === 'Pending Review' || p.status === 'Documents Needed';
+    return `<tr class="report-row-clickable" onclick="openPermitDetail('${id}')">
+      <td><strong style="color:#93c5fd;">${p.refNum}</strong></td>
+      <td>
+        <strong>${p.name}</strong>
+        <div style="font-size:.76rem;color:var(--dash-muted);">📞 ${p.phone||'—'}</div>
+        <div style="font-size:.76rem;color:var(--dash-muted);">✉️ ${p.email||'—'}</div>
+      </td>
+      <td style="font-size:.82rem;">${p.type||'—'}</td>
+      <td>${date}</td>
+      <td><span class="dk-badge ${badgeClass(p.status)}">${p.status}</span></td>
+      <td onclick="event.stopPropagation()">
+        ${p.idURL?`<a href="${p.idURL}" target="_blank" class="dk-btn">🪪 ID</a>`:''}
+        ${p.permitURLs?.length?`<a href="${p.permitURLs[0]}" target="_blank" class="dk-btn">📄 Doc</a>`:''}
+        ${!p.idURL && !p.permitURLs?.length ? '<span style="color:var(--dash-muted);">—</span>' : ''}
+      </td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.35rem;flex-wrap:wrap;">
+        <button class="dk-btn" onclick="openPermitDetail('${id}')" title="Full details">🔍</button>
+        ${canAct ? `
+          <button class="dk-btn success" onclick="updatePermit('${id}','Approved')">✓</button>
+          <button class="dk-btn danger" onclick="updatePermit('${id}','Rejected')">✗</button>
+        ` : p.status === 'Approved' ? `
+          <button class="dk-btn" onclick="openInstallModal('${id}','${p.name}','${p.refNum}')">📅 Schedule</button>
+        ` : p.status === 'Scheduled' ? `
+          <button class="dk-btn" onclick="openInstallModal('${id}','${p.name}','${p.refNum}')">✏️ Reschedule</button>
+        ` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── PERMIT DETAIL MODAL ────────────────────────────────────────
+window.openPermitDetail = (id) => {
+  const d = window._permitDocs?.[id];
+  if (!d) return;
+  const p = d.data();
+  const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('en-PH') : '—';
+  document.getElementById('pdmTitle').textContent = `Permit — ${p.refNum}`;
+  document.getElementById('pdmSubtitle').textContent = `${p.name} • Submitted ${date}`;
+  document.getElementById('pdmBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">📋 Application Summary</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Reference #</div><div class="df-value big">${p.refNum}</div></div>
+        <div class="detail-field"><div class="df-label">Status</div><div class="df-value"><span class="dk-badge ${badgeClass(p.status)}">${p.status}</span></div></div>
+        <div class="detail-field"><div class="df-label">Connection Type</div><div class="df-value big">${p.type||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Submitted</div><div class="df-value">${date}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">👤 Applicant Information</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Full Name</div><div class="df-value big">${p.name}</div></div>
+        <div class="detail-field"><div class="df-label">Phone</div><div class="df-value"><a href="tel:${p.phone}" style="color:#3b82f6;font-weight:600;">${p.phone||'—'}</a></div></div>
+        <div class="detail-field"><div class="df-label">Email</div><div class="df-value">${p.email||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Resident UID</div><div class="df-value" style="font-size:.76rem;color:#94a3b8;">${p.uid||'—'}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">📍 Property Address</div>
+      <div class="detail-desc">${p.address||'No address provided.'}</div>
+    </div>
+    ${p.notes ? `<div class="detail-section"><div class="detail-section-title">📝 Additional Notes</div><div class="detail-desc">${p.notes}</div></div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">📄 Submitted Documents</div>
+      <div class="docs-gallery">
+        ${docThumb(p.idURL, 'Government ID')}
+        ${(p.permitURLs||[]).map((u,i) => docThumb(u, `Document ${i+1}`)).join('')}
+      </div>
+      ${!p.idURL && !p.permitURLs?.length ? '<p style="color:#94a3b8;font-size:.85rem;margin-top:.5rem;">No documents uploaded</p>' : ''}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">🔄 Update Status</div>
+      ${statusDropdown('permits', id, p.status||'Pending Review', ['Pending Review','Documents Needed','Approved','Rejected','Scheduled','Completed'])}
+    </div>
+    ${p.installDate ? `<div class="detail-section"><div class="detail-section-title">🔧 Installation Info</div><div class="detail-grid"><div class="detail-field"><div class="df-label">Install Date</div><div class="df-value big">${p.installDate}</div></div><div class="detail-field"><div class="df-label">Technician</div><div class="df-value big">${p.installTech||'—'}</div></div>${p.installNotes?`<div class="detail-field" style="grid-column:1/-1"><div class="df-label">Notes</div><div class="detail-desc">${p.installNotes}</div></div>`:''}</div></div>` : ''}
+  `;
+  const canAct = p.status === 'Pending Review' || p.status === 'Documents Needed';
+  document.getElementById('pdmActions').innerHTML = `
+    <button class="detail-btn ghost" onclick="closePermitDetail()">✕ Close</button>
+    <a href="tel:${p.phone}" class="detail-btn ghost">📞 Call</a>
+    ${canAct ? `
+      <button class="detail-btn success" onclick="updatePermit('${id}','Approved');closePermitDetail();">✓ Approve</button>
+      <button class="detail-btn danger" onclick="updatePermit('${id}','Rejected');closePermitDetail();">✗ Reject</button>
+      <button class="detail-btn ghost" onclick="updatePermit('${id}','Documents Needed');closePermitDetail();">📎 Request Docs</button>
+    ` : p.status === 'Approved' ? `
+      <button class="detail-btn primary" onclick="openInstallModal('${id}','${p.name}','${p.refNum}');closePermitDetail();">📅 Schedule Install</button>
+    ` : ''}
+  `;
+  document.getElementById('permitDetailModal').classList.remove('hidden');
+};
+window.closePermitDetail = () => document.getElementById('permitDetailModal').classList.add('hidden');
+
+function renderReports(docs) {
+  const tb = document.getElementById('reportsTableBody');
+  if (!docs.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No service reports yet.</td></tr>'; return; }
+
+  // Store docs globally for modal access
+  window._reportDocs = {};
+  docs.forEach(d => { window._reportDocs[d.id] = d; });
+
+  tb.innerHTML = docs.map(d => {
+    const r = d.data(); const id = d.id;
+    const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+    const urgClass = r.urgency === 'Critical' ? 'critical' : r.urgency === 'High' ? 'pending' : r.urgency === 'Medium' ? 'scheduled' : 'review';
+    const descSnippet = r.desc ? r.desc.substring(0,60) + (r.desc.length > 60 ? '…' : '') : '—';
+    const hasPhoto = !!r.photoURL;
+    const assignedLabel = r.assignedGroup
+      ? `<div style="font-size:.8rem;font-weight:700;color:#1e40af;">🏗️ ${r.assignedGroup.groupName}</div>
+         <div style="font-size:.73rem;color:#64748b;">👤 ${r.assignedGroup.leader}</div>
+         ${r.dispatchDate ? `<div style="font-size:.72rem;color:#94a3b8;">📅 ${r.dispatchDate}</div>` : ''}`
+      : `<span style="color:#94a3b8;font-size:.78rem;font-style:italic;">Unassigned</span>`;
+    return `<tr class="report-row-clickable" onclick="openReportDetail('${id}')">
+      <td>
+        <strong style="color:#93c5fd;">${r.refNum}</strong>
+        ${hasPhoto ? '<span title="Has photo" style="margin-left:.3rem;font-size:.8rem;">📷</span>' : ''}
+      </td>
+      <td>
+        <strong>${r.type}</strong>
+        <div style="font-size:.76rem;color:var(--dash-muted);margin-top:.15rem;">${descSnippet}</div>
+      </td>
+      <td>
+        <strong>${r.name}</strong>
+        <div style="font-size:.76rem;color:var(--dash-muted);">📞 ${r.phone||'—'}</div>
+      </td>
+      <td>
+        <div style="font-size:.82rem;font-weight:500;">📍 ${r.address||'—'}</div>
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(r.address||'')+',+Bindoy,+Negros+Oriental'}" target="_blank" class="detail-map-link" onclick="event.stopPropagation()">🗺️ Open Map</a>
+      </td>
+      <td><span class="dk-badge ${urgClass}">${r.urgency}</span></td>
+      <td>${assignedLabel}</td>
+      <td><span class="dk-badge ${badgeClass(r.status)}">${r.status}</span></td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.3rem;flex-wrap:wrap;">
+        <button class="dk-btn" onclick="openReportDetail('${id}')" title="View full details">🔍 Details</button>
+        <button class="dk-btn" onclick="openAssignModal('${id}')" title="Assign maintenance group" style="background:rgba(59,130,246,.1);color:#1e40af;border-color:rgba(59,130,246,.3);">👷 Assign</button>
+        ${r.status === 'Pending' ? `<button class="dk-btn" onclick="updateReport('${id}','In Progress')">🔧 Start</button>` : ''}
+        ${r.status !== 'Completed' ? `<button class="dk-btn success" onclick="updateReport('${id}','Completed')">✓ Done</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── REPORT DETAIL MODAL ────────────────────────────────────────
+window.openReportDetail = (id) => {
+  const d = window._reportDocs?.[id];
+  if (!d) return;
+  const r = d.data();
+  const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString('en-PH') : '—';
+  const updDate = r.updatedAt?.toDate ? r.updatedAt.toDate().toLocaleString('en-PH') : '—';
+  const urgClass = r.urgency === 'Critical' ? 'critical' : r.urgency === 'High' ? 'high' : r.urgency === 'Medium' ? 'medium' : 'low';
+  const mapsURL = `https://www.google.com/maps/search/${encodeURIComponent((r.address||'') + ', Bindoy, Negros Oriental')}`;
+
+  document.getElementById('rdmTitle').textContent = `${r.type} — ${r.refNum}`;
+  document.getElementById('rdmSubtitle').textContent = `Reported by ${r.name} • ${date}`;
+
+  document.getElementById('rdmBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">📋 Report Summary</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Reference #</div><div class="df-value big">${r.refNum}</div></div>
+        <div class="detail-field"><div class="df-label">Problem Type</div><div class="df-value big">${r.type}</div></div>
+        <div class="detail-field"><div class="df-label">Urgency Level</div><div class="df-value"><span class="detail-urgency ${urgClass}">${r.urgency === 'Critical' ? '🚨' : r.urgency === 'High' ? '⚠️' : r.urgency === 'Medium' ? '⚡' : '📋'} ${r.urgency}</span></div></div>
+        <div class="detail-field"><div class="df-label">Current Status</div><div class="df-value"><span class="dk-badge ${badgeClass(r.status)}">${r.status}</span></div></div>
+        <div class="detail-field"><div class="df-label">Date Reported</div><div class="df-value">${date}</div></div>
+        <div class="detail-field"><div class="df-label">Last Updated</div><div class="df-value">${updDate}</div></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">👤 Resident Information</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Full Name</div><div class="df-value big">${r.name}</div></div>
+        <div class="detail-field"><div class="df-label">Phone Number</div><div class="df-value"><a href="tel:${r.phone}" style="color:#3b82f6;font-weight:600;">${r.phone||'—'}</a></div></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">📍 Location of Problem</div>
+      <div class="detail-field" style="margin-bottom:.5rem;"><div class="df-label">Full Address</div><div class="df-value" style="font-size:1rem;font-weight:600;">${r.address||'—'}</div></div>
+      <a href="${mapsURL}" target="_blank" class="detail-map-link">🗺️ Open in Google Maps — Navigate to this location</a>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">📝 Problem Description</div>
+      <div class="detail-desc">${r.desc || 'No description provided.'}</div>
+    </div>
+
+    ${r.photoURL ? `
+    <div class="detail-section">
+      <div class="detail-section-title">📷 Photo Evidence</div>
+      <img src="${r.photoURL}" class="detail-photo" alt="Problem photo" onclick="openFileViewer('${r.photoURL}','Photo Evidence — ${r.refNum}')">
+      <div style="font-size:.75rem;color:#94a3b8;margin-top:.4rem;">Click to open full size</div>
+    </div>` : '<div class="detail-section"><div class="detail-section-title">📷 Photo Evidence</div><div style="color:#94a3b8;font-size:.85rem;">No photo uploaded.</div></div>'}
+
+    <div class="detail-section">
+      <div class="detail-section-title">🔄 Update Status</div>
+      ${statusDropdown('reports', id, r.status||'Pending', ['Pending','In Progress','Completed','Cancelled'])}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">👷 Assigned Maintenance Group</div>
+      ${r.assignedGroup ? `
+        <div class="assigned-group-info">
+          <div class="ag-label">Dispatched Group</div>
+          <div class="ag-name">🏗️ ${r.assignedGroup.groupName}</div>
+          <div class="ag-sub">👤 Leader: ${r.assignedGroup.leader}</div>
+          <div class="ag-sub">👥 Members: ${(r.assignedGroup.members||[]).join(', ')}</div>
+          ${r.dispatchDate ? `<div class="ag-sub" style="margin-top:.35rem;">📅 Dispatch Date: <strong>${r.dispatchDate}</strong></div>` : ''}
+          ${r.dispatchNotes ? `<div class="ag-sub">📝 Notes: ${r.dispatchNotes}</div>` : ''}
+        </div>
+      ` : '<div style="color:#94a3b8;font-size:.85rem;">No group assigned yet. Click "Assign Group" below.</div>'}
+    </div>
+  `;
+
+  document.getElementById('rdmActions').innerHTML = `
+    <button class="detail-btn ghost" onclick="closeReportDetail()">✕ Close</button>
+    <a href="tel:${r.phone}" class="detail-btn ghost">📞 Call Resident</a>
+    <a href="${mapsURL}" target="_blank" class="detail-btn primary">🗺️ Navigate</a>
+    <button class="detail-btn primary" onclick="closeReportDetail();openAssignModal('${id}');" style="background:#1e40af;">👷 Assign Group</button>
+    ${r.status === 'Pending' ? `<button class="detail-btn primary" onclick="updateReport('${id}','In Progress');closeReportDetail();">🔧 Mark In Progress</button>` : ''}
+    ${r.status !== 'Completed' ? `<button class="detail-btn success" onclick="updateReport('${id}','Completed');closeReportDetail();">✓ Mark Completed</button>` : '<span style="color:#10b981;font-weight:700;align-self:center;">✓ Completed</span>'}
+    ${r.photoURL ? `<a href="${r.photoURL}" target="_blank" class="detail-btn ghost">📷 View Photo</a>` : ''}
+  `;
+
+  document.getElementById('reportDetailModal').classList.remove('hidden');
+};
+
+window.closeReportDetail = () => document.getElementById('reportDetailModal').classList.add('hidden');
+
+// ── ASSIGN MAINTENANCE GROUP ──────────────────────────────────
+let _allGroups = [];        // cache fetched groups
+let _assignReportId = null; // current report being assigned
+let _selectedGroupIdx = null;
+
+async function loadMaintenanceGroups() {
+  if (_allGroups.length) return _allGroups; // use cache
+  const snap = await getDocs(collection(db, 'maintenance_groups'));
+  _allGroups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return _allGroups;
+}
+
+window.openAssignModal = async (reportId) => {
+  _assignReportId = reportId;
+  _selectedGroupIdx = null;
+
+  const reportDoc = window._reportDocs?.[reportId];
+  const r = reportDoc?.data?.() || {};
+  document.getElementById('assignModalSubtitle').textContent =
+    `Report: ${r.refNum || reportId} — ${r.type || ''}`;
+
+  // Pre-fill dispatch date with today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('assignDispatchDate').value = today;
+  document.getElementById('assignNotes').value = '';
+
+  document.getElementById('assignGroupModal').classList.remove('hidden');
+
+  const container = document.getElementById('groupCardsContainer');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;">Loading groups…</div>';
+
+  try {
+    const groups = await loadMaintenanceGroups();
+    if (!groups.length) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;">No maintenance groups found in Firestore.</div>';
+      return;
+    }
+    container.innerHTML = groups.map((g, i) => `
+      <div class="group-card" id="groupCard-${i}" onclick="selectGroupCard(${i})">
+        <div class="group-card-top">
+          <div class="group-name">🏗️ ${g.groupName}</div>
+          <span class="group-status-badge ${(g.status||'').toLowerCase() === 'active' ? 'active' : 'inactive'}">${g.status || 'Unknown'}</span>
+        </div>
+        <div class="group-leader">👤 Leader: <strong>${g.leader || '—'}</strong></div>
+        <div class="group-members">
+          ${(g.members || []).map(m => `<span class="member-pill">👷 ${m}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    // Pre-select if already assigned
+    if (r.assignedGroup) {
+      const idx = groups.findIndex(g => g.id === r.assignedGroup.id);
+      if (idx !== -1) selectGroupCard(idx);
+    }
+  } catch(err) {
+    container.innerHTML = `<div style="color:#ef4444;padding:1rem;">Error loading groups: ${err.message}</div>`;
+  }
+};
+
+window.selectGroupCard = (idx) => {
+  _selectedGroupIdx = idx;
+  document.querySelectorAll('.group-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx);
+  });
+};
+
+window.closeAssignModal = () => {
+  document.getElementById('assignGroupModal').classList.add('hidden');
+  _assignReportId = null;
+  _selectedGroupIdx = null;
+};
+
+window.confirmAssign = async () => {
+  if (_selectedGroupIdx === null) {
+    showToast('Please select a maintenance group.', 'error'); return;
+  }
+  const dispatchDate = document.getElementById('assignDispatchDate').value;
+  if (!dispatchDate) {
+    showToast('Please set a dispatch date.', 'error'); return;
+  }
+
+  const group = _allGroups[_selectedGroupIdx];
+  const btn = document.getElementById('confirmAssignBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  try {
+    await updateDoc(doc(db, 'reports', _assignReportId), {
+      assignedGroup: {
+        id:        group.id,
+        groupName: group.groupName,
+        leader:    group.leader,
+        members:   group.members || []
+      },
+      dispatchDate:  dispatchDate,
+      dispatchNotes: document.getElementById('assignNotes').value.trim(),
+      status:        'In Progress',
+      updatedAt:     serverTimestamp()
+    });
+    showToast(`✓ Group "${group.groupName}" assigned!`, 'success');
+    pushActivity('👷', `Maintenance group <strong>${group.groupName}</strong> assigned to report`, 'just now');
+    closeAssignModal();
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.textContent = '✓ Confirm Assignment'; btn.disabled = false;
+  }
+};
+
+function renderInstallation(docs) {
+  // docs = new_connections docs filtered to Approved/Scheduled/Connection Order
+  const eligible = docs.filter(d => ['Approved','Scheduled','Connection Order','Connected'].includes(d.data().status));
+  const tb = document.getElementById('installTableBody');
+  const badge = document.getElementById('tabCountInstall');
+  if (badge) badge.textContent = eligible.filter(d => d.data().status !== 'Connected').length;
+  if (!eligible.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No approved connections to schedule yet.</td></tr>';
+    return;
+  }
+  tb.innerHTML = eligible.map(d => {
+    const c = d.data(); const id = d.id;
+    // Resident may have chosen an electrician during application (stage 3)
+    const chosenElec = c.chosenElectrician || c.preferredElectrician || c.electrician || '—';
+    return `<tr>
+      <td><strong style="color:#93c5fd;">${c.refNum}</strong></td>
+      <td>
+        <strong>${c.name||c.applicantName||'—'}</strong>
+        <div style="font-size:.76rem;color:var(--dash-muted);">📞 ${c.phone||'—'}</div>
+      </td>
+      <td style="font-size:.82rem;">${c.connType||c.type||'—'}</td>
+      <td><span class="dk-badge ${badgeClass(c.status)}">${c.status}</span></td>
+      <td>
+        <strong style="color:#3b82f6;">${chosenElec}</strong>
+        ${chosenElec !== '—' ? '<div style="font-size:.72rem;color:var(--dash-muted);">Chosen by resident</div>' : ''}
+      </td>
+      <td>${c.installDate||'<em style="color:var(--dash-muted);">Not set</em>'}</td>
+      <td>
+        <button class="dk-btn" onclick="openInstallModal('${id}','${(c.name||c.applicantName||'').replace(/'/g,"\\'")}','${c.refNum}','${chosenElec.replace(/'/g,"\\'")}')">
+          ${c.installDate ? '✏️ Reschedule' : '📅 Schedule'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAllBills(docs) {
+  allBillsCache = docs.map(d => ({ id: d.id, ...d.data() }));
+  allBillsCache.sort((a, b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+  renderBillsTable(allBillsCache);
+}
+
+function renderNewConns(docs) {
+  const tb = document.getElementById('newconnsTableBody');
+  if (!docs.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No new connections yet.</td></tr>'; return; }
+  window._connDocs = {};
+  docs.forEach(d => { window._connDocs[d.id] = d; });
+
+  tb.innerHTML = docs.map(d => {
+    const c = d.data(); const id = d.id;
+    const date = c.createdAt?.toDate ? c.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+    const canAct = c.status === 'Submitted' || c.status === 'Under Review';
+    return `<tr class="report-row-clickable" onclick="openConnDetail('${id}')">
+      <td><strong style="color:#93c5fd;">${c.refNum}</strong></td>
+      <td>
+        <strong>${c.name}</strong>
+        <div style="font-size:.76rem;color:var(--dash-muted);">📞 ${c.phone||'—'}</div>
+      </td>
+      <td style="font-size:.82rem;">${c.connType||'—'}</td>
+      <td>${date}</td>
+      <td><span class="dk-badge ${badgeClass(c.status)}">${c.status}</span></td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.3rem;flex-wrap:wrap;">
+        <button class="dk-btn" onclick="openConnDetail('${id}')">🔍 Details</button>
+        ${canAct ? `
+          <button class="dk-btn success" onclick="updateNewConn('${id}','Inspection Scheduled')">📅 Inspect</button>
+          <button class="dk-btn danger" onclick="updateNewConn('${id}','Rejected')">✗</button>
+        ` : c.status === 'Inspection Scheduled' ? `
+          <button class="dk-btn success" onclick="updateNewConn('${id}','Approved')">✓ Approve</button>
+        ` : c.status === 'Approved' ? `
+          <button class="dk-btn" onclick="updateNewConn('${id}','Connection Order')">📝 Order</button>
+        ` : c.status === 'Connection Order' ? `
+          <button class="dk-btn success" onclick="updateNewConn('${id}','Connected')">⚡ Connect</button>
+        ` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SEMINARS STAFF VIEW ────────────────────────────────────────
+let _seminarRegUnsub = null; // unsubscribe from previous regs listener
+
+function renderSeminars(docs) {
+  const tb = document.getElementById('seminarsTableBody');
+  if (!docs.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No seminars posted yet.</td></tr>';
+    return;
+  }
+  tb.innerHTML = docs.map(d => {
+    const s = d.data(); const id = d.id;
+    const taken = s.taken || 0;
+    const slots = s.slots || 0;
+    const pct = slots > 0 ? Math.round((taken/slots)*100) : 0;
+    const barColor = pct >= 100 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#10b981';
+    return `<tr>
+      <td><strong>${s.title||'—'}</strong></td>
+      <td>${s.date||'—'}</td>
+      <td style="font-size:.82rem;">${s.time||'—'}</td>
+      <td style="font-size:.82rem;">${s.location||s.venue||'—'}</td>
+      <td>${slots}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div style="flex:1;background:#e2e8f0;border-radius:999px;height:6px;min-width:60px;">
+            <div style="width:${pct}%;background:${barColor};height:6px;border-radius:999px;transition:.3s;"></div>
+          </div>
+          <span style="font-size:.82rem;font-weight:700;color:${barColor};">${taken}/${slots}</span>
+        </div>
+      </td>
+      <td style="display:flex;gap:.35rem;flex-wrap:wrap;">
+        <button class="dk-btn" onclick="viewSeminarRegs('${id}','${(s.title||'').replace(/'/g,"\\'")}')">👥 View Regs</button>
+        <button class="dk-btn danger" onclick="deleteSeminar('${id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.viewSeminarRegs = function(seminarId, title) {
+  document.getElementById('semRegsTitle').textContent = title;
+  const tbody = document.getElementById('semRegsBody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--dash-muted);">Loading…</td></tr>';
+  if (_seminarRegUnsub) _seminarRegUnsub();
+  _seminarRegUnsub = onSnapshot(
+    query(collection(db,'seminar_registrations'), where('seminarId','==',seminarId)),
+    (snap) => {
+      if (snap.empty) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--dash-muted);">No registrations yet for this seminar.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+        return `<tr>
+          <td><strong>${r.name||'—'}</strong></td>
+          <td style="font-size:.82rem;">${r.email||'—'}</td>
+          <td>${r.phone||'—'}</td>
+          <td>${date}</td>
+          <td><span class="dk-badge approved">${r.status||'Confirmed'}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  );
+  // Scroll to registrations panel
+  document.getElementById('semRegsBody').closest('.dark-table-wrap').scrollIntoView({behavior:'smooth'});
+};
+
+window.postSeminar = async function() {
+  const title  = document.getElementById('semTitle').value.trim();
+  const date   = document.getElementById('semDate').value;
+  const time   = document.getElementById('semTime').value.trim();
+  const venue  = document.getElementById('semVenue').value.trim();
+  const slots  = Number(document.getElementById('semSlots').value);
+  const desc   = document.getElementById('semDesc').value.trim();
+  const btn    = document.getElementById('postSeminarBtn');
+
+  if (!title || !date || !time || !venue || !slots) {
+    showToast('Please fill all required fields.', 'error'); return;
+  }
+
+  btn.textContent = 'Posting…'; btn.disabled = true;
+  try {
+    await addDoc(collection(db,'seminars'), {
+      title, date, time, location: venue, venue, desc, slots, taken: 0,
+      postedBy: user?.name || user?.email || 'Staff',
+      createdAt: serverTimestamp()
+    });
+    ['semTitle','semDate','semTime','semVenue','semSlots','semDesc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    showToast('Seminar posted!', 'success');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.textContent = '📅 Post Seminar'; btn.disabled = false;
+  }
+};
+
+window.deleteSeminar = async function(id) {
+  if (!confirm('Delete this seminar? Existing registrations will remain.')) return;
+  try {
+    await deleteDoc(doc(db,'seminars',id));
+    showToast('Seminar deleted.', 'success');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+};
+
+// ── NEW CONNECTION DETAIL MODAL ────────────────────────────────
+window.openConnDetail = (id) => {
+  const d = window._connDocs?.[id];
+  if (!d) return;
+  const c = d.data();
+  const date = c.createdAt?.toDate ? c.createdAt.toDate().toLocaleString('en-PH') : '—';
+  document.getElementById('cdmTitle').textContent = `New Connection — ${c.refNum}`;
+  document.getElementById('cdmSubtitle').textContent = `${c.name} • ${c.connType||'—'} • ${date}`;
+  document.getElementById('cdmBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">📋 Application Summary</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Reference #</div><div class="df-value big">${c.refNum}</div></div>
+        <div class="detail-field"><div class="df-label">Status</div><div class="df-value"><span class="dk-badge ${badgeClass(c.status)}">${c.status}</span></div></div>
+        <div class="detail-field"><div class="df-label">Connection Type</div><div class="df-value big">${c.connType||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Building Type</div><div class="df-value">${c.buildingType||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Est. Load</div><div class="df-value">${c.estimatedLoad ? c.estimatedLoad + ' kW' : '—'}</div></div>
+        <div class="detail-field"><div class="df-label">PMES Attended</div><div class="df-value">${c.pmesAttended === 'yes' ? '✅ Yes' : '❌ Not yet'} ${c.pmesDate ? '('+c.pmesDate+')' : ''}</div></div>
+        <div class="detail-field"><div class="df-label">Submitted</div><div class="df-value">${date}</div></div>
+        <div class="detail-field"><div class="df-label">Existing Member</div><div class="df-value">${c.isMember === 'yes' ? 'Yes' : 'No'}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">👤 Applicant Information</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Full Name</div><div class="df-value big">${c.name}</div></div>
+        <div class="detail-field"><div class="df-label">Phone</div><div class="df-value"><a href="tel:${c.phone}" style="color:#3b82f6;font-weight:600;">${c.phone||'—'}</a></div></div>
+        <div class="detail-field"><div class="df-label">Email</div><div class="df-value">${c.email||'—'}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">📍 Property Location</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Full Address</div><div class="df-value">${c.address||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Barangay</div><div class="df-value">${c.barangay||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Municipality</div><div class="df-value">${c.municipality||'—'}</div></div>
+      </div>
+      <a href="https://www.google.com/maps/search/${encodeURIComponent((c.address||'') + ', ' + (c.barangay||'') + ', Bindoy, Negros Oriental')}" target="_blank" class="detail-map-link">🗺️ Open in Google Maps</a>
+    </div>
+    ${c.notes ? `<div class="detail-section"><div class="detail-section-title">📝 Notes</div><div class="detail-desc">${c.notes}</div></div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">📄 Submitted Documents</div>
+      <div class="docs-gallery">
+        ${docThumb(c.docs?.membershipForm,      'Membership Form')}
+        ${docThumb(c.docs?.electricalPermit,    'Electrical Permit')}
+        ${docThumb(c.docs?.finalInspectionCert, 'Final Inspection Cert')}
+        ${docThumb(c.docs?.electricalPlan,      'Electrical Plan')}
+        ${docThumb(c.docs?.sdwAffidavit,        'SDW Affidavit')}
+        ${docThumb(c.docs?.electricianLicense,  'Electrician License')}
+        ${docThumb(c.docs?.completionCert,      'Completion Cert')}
+        ${docThumb(c.docs?.sdwAffidavit100m,    'SDW Affidavit 100m')}
+        ${docThumb(c.docs?.pmesCertificate,     'PMES Certificate')}
+        ${docThumb(c.elecPlanURL,               'Electrical Plan')}
+        ${docThumb(c.elecPermitURL,             'Electrical Permit')}
+        ${docThumb(c.inspCertURL,               'Inspection Cert')}
+        ${docThumb(c.govIDURL,                  'Government ID')}
+        ${docThumb(c.mapURL,                    'Location Map')}
+      </div>
+      ${!c.docs && !c.elecPlanURL && !c.govIDURL ? '<p style="color:#94a3b8;font-size:.85rem;margin-top:.5rem;">No documents uploaded yet.</p>' : ''}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">🧾 Payment Receipt</div>
+      <div class="receipt-panel">
+        <div class="receipt-panel-title">Uploaded by applicant</div>
+        ${c.receiptURL
+          ? receiptItem(c.receiptURL, 'Payment Receipt', c.processingMode ? 'Mode: ' + c.processingMode : '')
+          : '<p class="no-receipt">No receipt uploaded yet.</p>'}
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">🔄 Update Status</div>
+      ${statusDropdown('new_connections', id, c.status||'pending_payment', [
+        'pending_payment','Under Review','Inspection Scheduled',
+        'Approved','Rejected','Connection Order','Connected'
+      ])}
+    </div>
+  `;
+  document.getElementById('cdmActions').innerHTML = `
+    <button class="detail-btn ghost" onclick="closeConnDetail()">✕ Close</button>
+    <a href="tel:${c.phone}" class="detail-btn ghost">📞 Call Applicant</a>
+    ${c.status === 'Submitted' || c.status === 'Under Review' ? `
+      <button class="detail-btn primary" onclick="updateNewConn('${id}','Inspection Scheduled');closeConnDetail();">📅 Schedule Inspection</button>
+      <button class="detail-btn success" onclick="updateNewConn('${id}','Approved');closeConnDetail();">✓ Approve</button>
+      <button class="detail-btn danger" onclick="updateNewConn('${id}','Rejected');closeConnDetail();">✗ Reject</button>
+    ` : c.status === 'Inspection Scheduled' ? `
+      <button class="detail-btn success" onclick="updateNewConn('${id}','Approved');closeConnDetail();">✓ Approve</button>
+    ` : c.status === 'Approved' ? `
+      <button class="detail-btn primary" onclick="updateNewConn('${id}','Connection Order');closeConnDetail();">📝 Issue Connection Order</button>
+    ` : c.status === 'Connection Order' ? `
+      <button class="detail-btn success" onclick="updateNewConn('${id}','Connected');closeConnDetail();">⚡ Mark as Connected</button>
+    ` : ''}
+  `;
+  document.getElementById('connDetailModal').classList.remove('hidden');
+};
+window.closeConnDetail = () => document.getElementById('connDetailModal').classList.add('hidden');
+
+function renderRatings(docs) {
+  const tb = document.getElementById('ratingsTableBody');
+  if (!docs.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No ratings yet.</td></tr>'; return; }
+  tb.innerHTML = docs.map(d => {
+    const r = d.data();
+    const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+    const stars = '★'.repeat(r.rating||0) + '☆'.repeat(5-(r.rating||0));
+    const starColor = r.rating >= 4 ? '#f59e0b' : r.rating >= 3 ? '#f97316' : '#ef4444';
+    return `<tr>
+      <td><strong style="color:#93c5fd;">${r.ref||'—'}</strong></td>
+      <td><span style="color:${starColor};font-size:1rem;letter-spacing:1px;">${stars}</span> <span style="font-size:.75rem;color:var(--dash-muted);">(${r.rating||0}/5)</span></td>
+      <td><strong>${r.groupName||'<span style="color:var(--dash-muted);font-style:italic;">—</span>'}</strong></td>
+      <td style="font-size:.82rem;color:var(--dash-muted);">${r.groupLeader||'—'}</td>
+      <td style="font-size:.78rem;color:var(--dash-muted);">${(r.tags||[]).join(', ')||'—'}</td>
+      <td style="font-size:.83rem;max-width:220px;white-space:normal;line-height:1.4;" title="${r.feedback||''}">${r.feedback ? `<span style="color:var(--dash-text);">"${r.feedback}"</span>` : '<span style="color:var(--dash-muted);">—</span>'}</td>
+      <td>${date}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ACTIONS ────────────────────────────────────────────────────
+window.updatePermit = async (id, status) => {
+  try { await updateDoc(doc(db,'permits',id), { status, updatedAt: serverTimestamp() }); showToast('Permit → ' + status, status==='Approved'?'success':'info'); }
+  catch(e) { showToast('Error: ' + e.message, 'error'); }
+};
+
+window.updateReport = async (id, status) => {
+  try { await updateDoc(doc(db,'reports',id), { status, updatedAt: serverTimestamp() }); showToast('Report → ' + status, 'success'); }
+  catch(e) { showToast('Error: ' + e.message, 'error'); }
+};
+
+window.updateNewConn = async (id, status) => {
+  try { await updateDoc(doc(db,'new_connections',id), { status, updatedAt: serverTimestamp() }); showToast('Connection → ' + status, 'success'); }
+  catch(e) { showToast('Error: ' + e.message, 'error'); }
+};
+
+// ── RATE TABLE CACHE ───────────────────────────────────────────
+let activeRateData = null;
+let activeRateMonth = '2026-05';
+
+async function loadActiveRate(rateMonthId) {
+  const banner     = document.getElementById('rateStatusBanner');
+  const bannerText = document.getElementById('rateStatusText');
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 8000)
+  );
+
+  try {
+    console.log('[Rates] Fetching rates/' + rateMonthId + '…');
+    const snap = await Promise.race([
+      getDoc(doc(db, 'rates', rateMonthId)),
+      timeoutPromise
+    ]);
+
+    if (snap.exists()) {
+      activeRateData  = snap.data();
+      activeRateMonth = rateMonthId;
+      console.log('[Rates] ✅ Loaded successfully:', activeRateData);
+      if (banner) {
+        banner.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.75rem 1.1rem;margin-bottom:1rem;font-size:.84rem;color:#166534;display:flex;align-items:center;gap:.6rem;';
+        bannerText.textContent = `✅ Rate table loaded (${rateMonthId}) — Amount auto-calculates from readings.`;
+      }
+      autoCalcFromReadings();
+    } else {
+      activeRateData = null;
+      console.warn('[Rates] ❌ No document at rates/' + rateMonthId);
+      if (banner) {
+        banner.style.cssText = 'background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:.75rem 1.1rem;margin-bottom:1rem;font-size:.84rem;color:#854d0e;display:flex;align-items:center;gap:.6rem;';
+        bannerText.textContent = `⚠️ No rate document found for "${rateMonthId}" in Firestore. Check that the document ID is exactly "${rateMonthId}".`;
+      }
+      showManualAmountInput();
+    }
+  } catch(e) {
+    activeRateData = null;
+    const isTimeout = e.message === 'timeout';
+    console.error('[Rates] ❌ Error:', e.code || e.message);
+    if (banner) {
+      banner.style.cssText = 'background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:.75rem 1.1rem;margin-bottom:1rem;font-size:.84rem;color:#991b1b;display:flex;align-items:center;gap:.6rem;';
+      bannerText.innerHTML = isTimeout
+        ? `❌ Timed out loading rates. Fix Firestore Rules: allow read on <strong>rates</strong> collection. <a href="https://console.firebase.google.com" target="_blank" style="color:#7f1d1d;font-weight:700;text-decoration:underline;">Open Firebase Console →</a>`
+        : `❌ Error (${e.code || e.message}) — Check Firestore security rules for the rates collection.`;
+    }
+    showManualAmountInput();
+  }
+}
+
+function showManualAmountInput() {
+  const noteEl = document.getElementById('rateCalcNote');
+  if (noteEl) noteEl.textContent = '— rate table unavailable, enter manually';
+  // Replace the read-only amount display with an editable input
+  const amountDisplayEl = document.getElementById('amountDisplay');
+  if (amountDisplayEl && amountDisplayEl.tagName !== 'INPUT') {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.id = 'amountDisplay';
+    input.placeholder = 'Enter total amount';
+    input.step = '0.01';
+    input.style.cssText = 'font-family:\'Sora\',sans-serif;font-size:1.2rem;font-weight:800;color:#15803d;border:2px solid #bbf7d0;border-radius:8px;padding:.4rem .75rem;width:100%;background:#f0fdf4;';
+    input.oninput = function() {
+      const billAmt = document.getElementById('billAmount');
+      if (billAmt) billAmt.value = this.value;
+    };
+    amountDisplayEl.replaceWith(input);
+  }
+}
+
+function calcTotalFromRate(kwh, r) {
+  if (!r || !kwh) return { total:0, gen:0, trans:0, sysLoss:0, dist:0, supplyMeter:0, vat:0, uc:0, subtotalCharges:0 };
+  const gen      = kwh * (r.generation      || 0);
+  const trans    = kwh * (r.transmission    || 0);
+  const sysLoss  = kwh * (r.system_loss     || 0);
+  const dist     = kwh * (r.distribution    || 0);
+  const supply   = kwh * (r.supply          || 0);
+  const meterSys = kwh * (r.metering_system || 0);
+  const meterFix = Number(r.metering_retail_customer || 0);
+  const vatGen   = kwh * (r.gen_vat      || 0);
+  const vatTrans = kwh * (r.trans_vat    || 0);
+  const vatSysL  = kwh * (r.sysloss_vat  || 0);
+  const distBase = dist + supply + meterSys + meterFix;
+  const vatDist  = distBase * ((r.distribution_percent || 0) / 100);
+  const ucMe     = kwh * (r.missionary_electrification || 0);
+  const fitAll   = kwh * (r.fit_all            || 0);
+  const env      = kwh * (r.environmental      || 0);
+  const npc      = kwh * (r.npc_stranded_debts || 0);
+  const uog      = kwh * (r.uog    || 0);
+  const osla     = kwh * (r.osla   || 0);
+  const capex    = kwh * (r.capex  || 0);
+  const otherKwh = kwh * (r.other_kwh || 0);
+  const subtotalCharges = gen + trans + sysLoss + dist + supply + meterSys + meterFix;
+  const totalVat        = vatGen + vatTrans + vatSysL + vatDist;
+  const totalUC         = ucMe + fitAll + env + npc + uog + osla + capex + otherKwh;
+  return {
+    total: subtotalCharges + totalVat + totalUC,
+    gen, trans, sysLoss,
+    dist, supplyMeter: supply + meterSys + meterFix,
+    vat: totalVat, uc: totalUC, subtotalCharges
+  };
+}
+
+window.onBillMonthChange = function() {
+  const val = (document.getElementById('billPeriod').value || '').trim();
+  if (!val) return;
+  const parsed = new Date(val + ' 1');
+  if (!isNaN(parsed)) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const monthId = `${y}-${m}`;
+    if (monthId !== activeRateMonth) loadActiveRate(monthId);
+  }
+};
+
+window.autoCalcFromReadings = function() {
+  const prev = Number(document.getElementById('billPrevReading')?.value) || 0;
+  const pres = Number(document.getElementById('billPresReading')?.value) || 0;
+  const mult = Number(document.getElementById('billMult')?.value) || 1;
+  const kwh  = pres > prev ? Math.round((pres - prev) * mult * 100) / 100 : 0;
+
+  const kwhInput = document.getElementById('billKwh');
+  if (kwhInput) kwhInput.value = kwh;
+
+  const kwhEl     = document.getElementById('kwhDisplay');
+  const formulaEl = document.getElementById('kwhFormula');
+  if (kwhEl)     kwhEl.textContent     = kwh;
+  if (formulaEl) formulaEl.textContent = prev && pres ? `( ${pres} − ${prev} ) × ${mult}` : `( — − — ) × ${mult}`;
+
+  const c          = calcTotalFromRate(kwh, activeRateData);
+  const amountEl   = document.getElementById('amountDisplay');
+  const amountInput= document.getElementById('billAmount');
+  const p2         = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  if (amountEl && amountEl.tagName !== 'INPUT')
+    amountEl.textContent = kwh > 0 && activeRateData ? p2(c.total) : '₱0.00';
+  if (amountInput) amountInput.value = kwh > 0 && activeRateData ? c.total.toFixed(2) : '0';
+
+  billLiveCalc(kwh, c);
+};
+
+// ── LIVE PREVIEW UPDATE ────────────────────────────────────────
+window.billLiveCalc = function(kwh, c) {
+  const p2 = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (kwh === undefined) {
+    const prev = Number(document.getElementById('billPrevReading')?.value) || 0;
+    const pres = Number(document.getElementById('billPresReading')?.value) || 0;
+    const mult = Number(document.getElementById('billMult')?.value) || 1;
+    kwh = pres > prev ? Math.round((pres - prev) * mult * 100) / 100 : 0;
+    c   = calcTotalFromRate(kwh, activeRateData);
+  }
+  const resName  = (document.getElementById('billResidentName')?.value || '').trim();
+  const pn = document.getElementById('previewResName');
+  if (pn) pn.textContent = resName || '— Resident —';
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = p2(val); };
+  set('pv_gen',      c.gen);
+  set('pv_trans',    c.trans);
+  set('pv_sys',      c.sysLoss);
+  set('pv_dist',     c.dist);
+  set('pv_supply',   c.supplyMeter);
+  set('pv_subtotal', c.subtotalCharges);
+  set('pv_vat',      c.vat);
+  set('pv_uc',       c.uc);
+
+  const totalEl = document.getElementById('pv_total');
+  if (totalEl) totalEl.textContent = kwh > 0 && activeRateData ? p2(c.total) : '₱0.00';
+  const kwhLbl = document.getElementById('pv_kwh_label');
+  if (kwhLbl) kwhLbl.textContent = `${kwh} kWh consumed`;
+};
+
+window.autoCalcAmountFromKwh = function(kwhOverride) {
+  const kwh = kwhOverride !== undefined ? Number(kwhOverride) : Number(document.getElementById('billKwh')?.value) || 0;
+  if (!activeRateData || !kwh) return;
+  const c = calcTotalFromRate(kwh, activeRateData);
+  const p2 = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const amountEl = document.getElementById('amountDisplay');
+  const amountInput = document.getElementById('billAmount');
+  if (amountEl && amountEl.tagName !== 'INPUT') amountEl.textContent = p2(c.total);
+  if (amountInput) amountInput.value = c.total.toFixed(2);
+  const note = document.getElementById('rateCalcNote');
+  if (note) note.textContent = `Auto-calculated from rates/${activeRateMonth}`;
+  billLiveCalc(kwh, c);
+};
+
+window.autoCalcKwh = function() {};
+
+window.onBillMonthChange = function() {
+  const val = document.getElementById('billPeriod')?.value || '';
+  const parsed = new Date(val + ' 1');
+  if (!isNaN(parsed)) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth()+1).padStart(2,'0');
+    const monthId = `${y}-${m}`;
+    if (monthId !== activeRateMonth) loadActiveRate(monthId);
+  }
+};
+
+window.clearBillForm = function() {
+  ['billMeterSN','billResidentName','billResidentEmail','billDueDate',
+   'billPrevReading','billPresReading','billKwh','billAmount','billCoreloss'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = el.type === 'number' && id === 'billCoreloss' ? '0' : ''; }
+  });
+  const msg = document.getElementById('billFormMsg');
+  if (msg) msg.textContent = '';
+  const emsg = document.getElementById('emailMsg');
+  if (emsg) emsg.textContent = '';
+  // Reset displays
+  const kwhEl = document.getElementById('kwhDisplay');
+  const amountEl = document.getElementById('amountDisplay');
+  const formulaEl = document.getElementById('kwhFormula');
+  const pn = document.getElementById('previewResName');
+  if (kwhEl) kwhEl.textContent = '0';
+  if (amountEl && amountEl.tagName !== 'INPUT') amountEl.textContent = '₱0.00';
+  if (formulaEl) formulaEl.textContent = '( — − — ) × 1';
+  if (pn) pn.textContent = '— Resident —';
+  billLiveCalc(0, calcTotalFromRate(0, null));
+};
+
+// ── SEND BILL VIA EMAIL (mailto fallback) ──────────────────────
+window.sendBillEmail = function() {
+  const email   = (document.getElementById('billResidentEmail')?.value || '').trim();
+  const resName = (document.getElementById('billResidentName')?.value  || '').trim();
+  const meterSN = (document.getElementById('billMeterSN')?.value       || '').trim().toUpperCase();
+  const period  = document.getElementById('billPeriod')?.value || '';
+  const due     = document.getElementById('billDueDate')?.value || '';
+  const kwh     = Number(document.getElementById('billKwh')?.value) || 0;
+  const amount  = Number(document.getElementById('billAmount')?.value) || 0;
+  const msgEl   = document.getElementById('emailMsg');
+  const btn     = document.getElementById('sendEmailBtn');
+
+  if (!email)   { if(msgEl){msgEl.style.color='#fca5a5';msgEl.textContent='⚠️ Enter resident email first.';} return; }
+  if (!meterSN) { if(msgEl){msgEl.style.color='#fca5a5';msgEl.textContent='⚠️ Fill in Meter SN first.';} return; }
+  if (kwh === 0){ if(msgEl){msgEl.style.color='#fca5a5';msgEl.textContent='⚠️ Enter meter readings first.';} return; }
+
+  const c  = calcTotalFromRate(kwh, activeRateData);
+  const p2 = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const subject = encodeURIComponent(`NORECO I — Electric Bill Statement for ${period}`);
+  const body = encodeURIComponent(
+`NORECO I — NEGROS ORIENTAL I ELECTRIC COOPERATIVE
+Statement of Account — ${period}
+
+Dear ${resName || 'Resident'},
+
+Meter SN     : ${meterSN}
+Bill Month   : ${period}
+Consumption  : ${kwh} kWh
+Due Date     : ${due}
+
+POWER CHARGES
+  Generation      : ${p2(c.gen)}
+  Transmission    : ${p2(c.trans)}
+  System Loss     : ${p2(c.sysLoss)}
+  Distribution    : ${p2(c.dist)}
+  Supply/Metering : ${p2(c.supplyMeter)}
+  Subtotal        : ${p2(c.subtotalCharges)}
+
+VALUE ADDED TAX        : ${p2(c.vat)}
+UNIVERSAL CHARGES      : ${p2(c.uc)}
+
+══════════════════════════════════
+TOTAL AMOUNT DUE : ${p2(amount)}
+STATUS           : PENDING
+Due on           : ${due}
+══════════════════════════════════
+
+Please pay on or before the due date to avoid disconnection.
+Thank you for being a valued member of NORECO I!
+
+— NORECO I ElectService ECMS`);
+
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+  if (btn) { btn.textContent = '✅ Draft Opened!'; setTimeout(()=>{ btn.textContent='📧 Send Bill to Email'; },3000); }
+  if (msgEl) { msgEl.style.color='#86efac'; msgEl.textContent='✓ Email draft opened. Review and send from your mail app.'; }
+  showToast('Email draft opened for ' + email, 'success');
+};
+
+// Load rate immediately when module runs (not DOMContentLoaded — that fires too early for modules)
+loadActiveRate('2026-05');
+
+window.filterBillsTable = function(query) {
+  const lower = query.toLowerCase();
+  const filtered = allBillsCache.filter(b =>
+    (b.meterSN||'').toLowerCase().includes(lower) ||
+    (b.billMonth||b.period||'').toLowerCase().includes(lower) ||
+    (b.residentName||'').toLowerCase().includes(lower)
+  );
+  renderBillsTable(filtered);
+};
+
+// ── UNIVERSAL FILE VIEWER ──────────────────────────────────────
+window.openFileViewer = function(url, label) {
+  if (!url) return;
+  document.getElementById('fvLabel').textContent = label || 'File Preview';
+  document.getElementById('fvOpenLink').href = url;
+  const body = document.getElementById('fvBody');
+  const ext = (url.split('?')[0].split('.').pop() || '').toLowerCase();
+  const isImage = ['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext);
+  const isPDF   = ext === 'pdf';
+  if (isImage) {
+    body.innerHTML = `<img src="${url}" alt="${label || 'file'}" onclick="window.open('${url}','_blank')">`;
+  } else if (isPDF) {
+    body.innerHTML = `<iframe src="${url}" title="${label || 'PDF'}"></iframe>`;
+  } else {
+    body.innerHTML = `<div class="fileview-no-preview">
+      <div class="fv-icon">📄</div>
+      <p>${label || 'File'}</p>
+      <a href="${url}" target="_blank" style="background:#3b82f6;color:#fff;padding:.55rem 1.2rem;border-radius:8px;font-weight:700;text-decoration:none;font-size:.9rem;">⬇ Download / Open File</a>
+    </div>`;
+  }
+  document.getElementById('fileViewerModal').classList.remove('hidden');
+};
+window.closeFileViewer = () => document.getElementById('fileViewerModal').classList.add('hidden');
+
+// ── DOC THUMB HELPER ───────────────────────────────────────────
+function docThumb(url, label) {
+  if (!url) return '';
+  const ext = (url.split('?')[0].split('.').pop() || '').toLowerCase();
+  const isImage = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  return `<div class="doc-thumb" onclick="openFileViewer('${url}','${label}')">
+    ${isImage
+      ? `<img src="${url}" alt="${label}" loading="lazy">`
+      : `<div class="doc-thumb-file">📄<span>${ext||'file'}</span></div>`}
+    <div class="doc-thumb-label">${label}</div>
+  </div>`;
+}
+
+// ── RECEIPT ITEM HELPER ────────────────────────────────────────
+function receiptItem(url, label, sub) {
+  if (!url) return '';
+  return `<div class="receipt-item" onclick="openFileViewer('${url}','${label}')">
+    <span class="receipt-item-icon">🧾</span>
+    <div class="receipt-item-info">
+      <div class="ri-name">${label}</div>
+      ${sub ? `<div class="ri-sub">${sub}</div>` : ''}
+    </div>
+    <span class="receipt-item-view">👁 View</span>
+  </div>`;
+}
+
+// ── STATUS UPDATE INLINE ───────────────────────────────────────
+function statusDropdown(collection, id, currentStatus, options) {
+  const opts = options.map(o => `<option value="${o}" ${o===currentStatus?'selected':''}>${o}</option>`).join('');
+  return `<div class="status-select-wrap">
+    <select id="statusSel_${id}">${opts}</select>
+    <button class="status-apply-btn" onclick="applyStatus('${collection}','${id}','statusSel_${id}')">✓ Apply</button>
+  </div>`;
+}
+window.applyStatus = async function(col, id, selId) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const newStatus = sel.value;
+  try {
+    await updateDoc(doc(db, col, id), { status: newStatus, updatedAt: serverTimestamp() });
+    showToast('Status updated → ' + newStatus, 'success');
+    pushActivity('🔄', `Status updated to <strong>${newStatus}</strong>`, 'just now');
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+};
+
+// ── BILLS TABLE (updated with receipt column + click to detail) ─
+function renderBillsTable(bills) {
+  const tb = document.getElementById('allBillsBody');
+  if (!bills.length) {
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No bills found.</td></tr>';
+    return;
+  }
+  tb.innerHTML = bills.map(b => {
+    const date = b.createdAt?.toDate ? b.createdAt.toDate().toLocaleDateString('en-PH') : '—';
+    const hasReceipt = !!(b.receiptURL || b.receiptUrls?.length);
+    return `<tr class="report-row-clickable" onclick="openBillDetail('${b.id}')">
+      <td><strong style="font-family:monospace;color:var(--dash-blue);">${b.meterSN||'—'}</strong></td>
+      <td>${b.residentName||'<span style="color:var(--dash-muted)">—</span>'}</td>
+      <td>${b.billMonth||b.period||'—'}</td>
+      <td>${b.kwh||'—'} <span style="font-size:.7rem;color:var(--dash-muted)">kWh</span></td>
+      <td><strong>₱${Number(b.amount||0).toLocaleString()}</strong></td>
+      <td>${b.dueDate||'—'}</td>
+      <td><span class="dk-badge ${b.status==='Paid'?'paid':'pending'}">${b.status||'Pending'}</span></td>
+      <td onclick="event.stopPropagation()">
+        ${hasReceipt
+          ? `<span style="color:#7c3aed;font-size:.82rem;font-weight:700;cursor:pointer;" onclick="openBillDetail('${b.id}')">🧾 View</span>`
+          : `<span style="color:var(--dash-muted);font-size:.78rem;">None</span>`}
+      </td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.3rem;flex-wrap:wrap;">
+        <button class="dk-btn" onclick="openBillDetail('${b.id}')" title="View details">🔍</button>
+        <button class="dk-btn danger" onclick="deleteBill('${b.id}')" title="Delete">🗑</button>
+        ${b.status!=='Paid'?`<button class="dk-btn success" onclick="markBillPaid('${b.id}')">✓ Paid</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── BILL DETAIL MODAL ─────────────────────────────────────────
+window.openBillDetail = async function(billId) {
+  const b = allBillsCache.find(x => x.id === billId);
+  if (!b) return;
+  document.getElementById('bdmTitle').textContent = `Bill — ${b.meterSN||'—'} · ${b.billMonth||b.period||'—'}`;
+  document.getElementById('bdmSubtitle').textContent = `${b.residentName||'Resident'} · ₱${Number(b.amount||0).toLocaleString()} due ${b.dueDate||'—'}`;
+
+  const p2 = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Fetch receipts from Firestore payment_receipts collection
+  let receiptRows = '';
+  try {
+    const rSnap = await getDocs(query(collection(db,'payment_receipts'), where('bill_id','==',billId)));
+    if (!rSnap.empty) {
+      receiptRows = rSnap.docs.map(rd => {
+        const r = rd.data();
+        const uDate = r.uploaded_at?.toDate ? r.uploaded_at.toDate().toLocaleString('en-PH') : '—';
+        return receiptItem(r.receipt_url, `Receipt (Ref: ${r.reference_number||'—'})`, `Uploaded ${uDate}`);
+      }).join('');
+    }
+    if (b.receiptURL) receiptRows += receiptItem(b.receiptURL, 'Payment Receipt', '');
+  } catch(e) { console.warn('receipt fetch:', e.message); }
+
+  document.getElementById('bdmBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">💡 Bill Summary</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Meter SN</div><div class="df-value big" style="font-family:monospace;">${b.meterSN||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Resident</div><div class="df-value big">${b.residentName||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Bill Month</div><div class="df-value">${b.billMonth||b.period||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">Due Date</div><div class="df-value">${b.dueDate||'—'}</div></div>
+        <div class="detail-field"><div class="df-label">kWh Consumed</div><div class="df-value big">${b.kwh||'—'} kWh</div></div>
+        <div class="detail-field"><div class="df-label">Total Amount</div><div class="df-value big" style="color:#15803d;">${p2(b.amount)}</div></div>
+        <div class="detail-field"><div class="df-label">Status</div><div class="df-value"><span class="dk-badge ${b.status==='Paid'?'paid':'pending'}">${b.status||'Pending'}</span></div></div>
+        ${b.residentEmail ? `<div class="detail-field"><div class="df-label">Email</div><div class="df-value">${b.residentEmail}</div></div>` : ''}
+      </div>
+    </div>
+    ${b.prevReading!=null||b.presReading!=null ? `
+    <div class="detail-section">
+      <div class="detail-section-title">📊 Meter Readings</div>
+      <div class="detail-grid">
+        <div class="detail-field"><div class="df-label">Previous Reading</div><div class="df-value big">${b.prevReading??'—'} kWh</div></div>
+        <div class="detail-field"><div class="df-label">Present Reading</div><div class="df-value big">${b.presReading??'—'} kWh</div></div>
+        <div class="detail-field"><div class="df-label">Multiplier</div><div class="df-value">${b.multiplier||1}</div></div>
+        <div class="detail-field"><div class="df-label">Coreloss</div><div class="df-value">${b.coreloss||0}</div></div>
+      </div>
+    </div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">🔄 Update Status</div>
+      ${statusDropdown('bills', billId, b.status||'Pending', ['Pending','Paid','Overdue','Disputed'])}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">🧾 Payment Receipts</div>
+      <div class="receipt-panel">
+        <div class="receipt-panel-title">Uploaded by resident</div>
+        ${receiptRows || '<p class="no-receipt">No receipt uploaded yet.</p>'}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('bdmActions').innerHTML = `
+    <button class="detail-btn ghost" onclick="closeBillDetail()">✕ Close</button>
+    ${b.residentEmail ? `<a href="mailto:${b.residentEmail}" class="detail-btn ghost">📧 Email Resident</a>` : ''}
+    ${b.status!=='Paid'
+      ? `<button class="detail-btn success" onclick="markBillPaid('${billId}');closeBillDetail();">✓ Mark as Paid</button>`
+      : '<span style="color:#10b981;font-weight:700;align-self:center;">✓ Already Paid</span>'}
+    <button class="detail-btn danger" onclick="if(confirm('Delete this bill?')){deleteBill('${billId}');closeBillDetail();}">🗑 Delete</button>
+  `;
+  document.getElementById('billDetailModal').classList.remove('hidden');
+};
+window.closeBillDetail = () => document.getElementById('billDetailModal').classList.add('hidden');
+
+window.markBillPaid = async (id) => {
+  try {
+    await updateDoc(doc(db,'bills',id), { status:'Paid', paidAt: serverTimestamp() });
+    showToast('Bill marked as Paid!','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.deleteBill = async (id) => {
+  if (!confirm('Delete this bill record?')) return;
+  try {
+    await deleteDoc(doc(db,'bills',id));
+    showToast('Bill deleted.','info');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.addBillForResident = async () => {
+  const meterSN   = (document.getElementById('billMeterSN').value||'').trim().toUpperCase();
+  const period    = (document.getElementById('billPeriod').value||'').trim();
+  const kwh       = document.getElementById('billKwh').value;
+  const amount    = document.getElementById('billAmount').value;
+  const due       = (document.getElementById('billDueDate').value||'').trim();
+  const prevRead  = document.getElementById('billPrevReading').value;
+  const presRead  = document.getElementById('billPresReading').value;
+  const resName   = (document.getElementById('billResidentName').value||'').trim();
+  const resEmail  = (document.getElementById('billResidentEmail')?.value||'').trim();
+  const msgEl = document.getElementById('billFormMsg');
+
+  if (!meterSN || !period || !amount || !due) {
+    msgEl.textContent = '⚠️ Meter SN, Bill Month, Amount, and Due Date are required.';
+    msgEl.style.color = '#dc2626'; return;
+  }
+  if (meterSN.length < 4) {
+    msgEl.textContent = '⚠️ Meter SN must be at least 4 characters.';
+    msgEl.style.color = '#dc2626'; return;
+  }
+  if (!kwh || Number(kwh) <= 0) {
+    msgEl.textContent = '⚠️ Please enter meter readings to compute kWh.';
+    msgEl.style.color = '#dc2626'; return;
+  }
+
+  const btn = document.getElementById('addBillBtn');
+  btn.textContent = '⏳ Saving…'; btn.disabled = true;
+  msgEl.textContent = '';
+
+  try {
+    await addDoc(collection(db,'bills'), {
+      meterSN,
+      residentName:  resName  || null,
+      residentEmail: resEmail || null,
+      billMonth:     period,
+      period,
+      kwh:           Number(kwh) || null,
+      amount:        Number(amount),
+      dueDate:       due,
+      prevReading:   Number(prevRead) || null,
+      presReading:   Number(presRead) || null,
+      multiplier:    Number(document.getElementById('billMult')?.value) || 1,
+      coreloss:      Number(document.getElementById('billCoreloss')?.value) || 0,
+      rateMonth:     activeRateMonth || '2026-05',
+      status:        'Pending',
+      createdAt:     serverTimestamp()
+    });
+    clearBillForm();
+    msgEl.textContent = `✓ Bill saved! ${meterSN} — ₱${Number(amount).toLocaleString('en-PH',{minimumFractionDigits:2})}`;
+    msgEl.style.color = '#16a34a';
+    showToast('Bill added for ' + meterSN, 'success');
+    setTimeout(() => { msgEl.textContent = ''; }, 5000);
+  } catch(e) {
+    msgEl.textContent = '✗ Error: ' + e.message;
+    msgEl.style.color = '#dc2626';
+    showToast('Error: '+e.message,'error');
+  } finally {
+    btn.textContent = '➕ Add Bill'; btn.disabled = false;
+  }
+};
+
+// ── INSTALL MODAL ─────────────────────────────────────────────
+let currentInstallDocId  = null;
+let currentInstallDocData = null; // full Firestore data of the application
+
+// Render the electrician section inside the modal
+async function renderInstallElecSection(c) {
+  const section  = document.getElementById('installElecSection');
+  const techInput = document.getElementById('installTech');
+  const elecId   = c.electricianId   || '';
+  const elecName = c.electricianName || c.chosenElectrician || c.preferredElectrician || '';
+
+  // ── Case 1: Resident hired their OWN electrician ──────────────
+  if (elecId === 'own') {
+    techInput.value = 'Own Electrician (Resident-hired)';
+    section.innerHTML = `
+      <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;">
+        <span style="font-size:1.6rem;">🏠</span>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:#854d0e;">Resident hired their own electrician</div>
+          <div style="font-size:.76rem;color:#92400e;margin-top:.15rem;">No NORECO I electrician assignment needed. Confirm the date and proceed.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── Case 2: Resident chose a NORECO electrician from Firestore ─
+  if (elecId && elecId !== 'own') {
+    // Load that specific electrician's doc to get latest info
+    try {
+      const snap = await getDoc(doc(db, 'electricians', elecId));
+      const e = snap.exists() ? snap.data() : null;
+      const name    = e?.name    || elecName || '—';
+      const phone   = e?.phone   || e?.contactNo || '—';
+      const avail   = e?.available !== false;
+      techInput.value = name;
+      section.innerHTML = `
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #bfdbfe;border-radius:10px;padding:.85rem 1rem;">
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1e40af;margin-bottom:.5rem;">✅ Chosen by Resident — NORECO I Electrician</div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <div style="width:42px;height:42px;border-radius:50%;background:#002060;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👷</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:#1e293b;font-size:.95rem;">${name}</div>
+              <div style="font-size:.78rem;color:#3b82f6;margin-top:.1rem;">📍 NORECO I Electrician · 📞 ${phone}</div>
+              <div style="font-size:.72rem;margin-top:.2rem;font-weight:600;color:${avail ? '#166534' : '#991b1b'};">${avail ? '🟢 Available' : '🔴 Currently Busy'}</div>
+            </div>
+          </div>
+          <div style="margin-top:.65rem;font-size:.75rem;color:#1e40af;background:rgba(59,130,246,.08);border-radius:6px;padding:.4rem .65rem;">
+            ℹ️ This electrician was selected by the resident during their application. You may reassign below if needed.
+          </div>
+          <button onclick="showElecReassign()" style="margin-top:.6rem;background:transparent;border:1px solid #bfdbfe;color:#3b82f6;border-radius:7px;padding:.3rem .8rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;">🔄 Reassign to a different electrician</button>
+        </div>
+        <div id="elecReassignPanel" style="display:none;margin-top:.75rem;"></div>`;
+      return;
+    } catch(e) {
+      console.warn('Could not load electrician doc:', e.message);
+    }
+  }
+
+  // ── Case 3: No electrician chosen — load from Firestore for staff to pick ──
+  techInput.value = '';
+  section.innerHTML = `<div style="color:var(--dash-muted);font-size:.82rem;text-align:center;padding:.75rem;">Loading electricians…</div>`;
+  try {
+    const snap = await getDocs(collection(db, 'electricians'));
+    if (snap.empty) {
+      section.innerHTML = `<div style="color:#f59e0b;font-size:.82rem;padding:.5rem 0;">No electricians found in Firestore. Add them under the 'electricians' collection.</div>`;
+      return;
+    }
+    const cards = snap.docs.map(d => {
+      const e = d.data();
+      const avail = e.available !== false;
+      return `<div class="elec-pick-card" data-id="${d.id}" data-name="${(e.name||'—').replace(/"/g,'&quot;')}"
+        onclick="selectInstallElec(this,'${d.id}','${(e.name||'—').replace(/'/g,"\'")}',${avail})"
+        style="border:1.5px solid #e2e8f0;border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;cursor:${avail?'pointer':'not-allowed'};opacity:${avail?1:.5};background:#fff;transition:.15s;display:flex;align-items:center;gap:.75rem;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#002060;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">👷</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.88rem;color:#1e293b;">${e.name||'—'}</div>
+          <div style="font-size:.75rem;color:#3b82f6;">📍 NORECO I Electrician · 📞 ${e.phone||e.contactNo||'—'}</div>
+        </div>
+        <span style="font-size:.72rem;font-weight:700;padding:.18rem .55rem;border-radius:999px;${avail?'background:#dcfce7;color:#166534':'background:#fee2e2;color:#991b1b'}">${avail?'Available':'Busy'}</span>
+      </div>`;
+    }).join('');
+    section.innerHTML = `
+      <div style="font-size:.77rem;color:var(--dash-muted);margin-bottom:.5rem;">The resident did not select a NORECO I electrician. Please assign one:</div>
+      ${cards}`;
+  } catch(err) {
+    section.innerHTML = `<div style="color:#ef4444;font-size:.82rem;">Failed to load electricians: ${err.message}</div>`;
+  }
+}
+
+window.selectInstallElec = function(card, id, name, available) {
+  if (!available) return;
+  document.querySelectorAll('.elec-pick-card').forEach(c => {
+    c.style.borderColor = '#e2e8f0'; c.style.background = '#fff';
+  });
+  card.style.borderColor = '#002060';
+  card.style.background  = '#eff6ff';
+  document.getElementById('installTech').value = name;
+};
+
+// Show the reassign panel (for residents who already chose a NORECO electrician)
+window.showElecReassign = async function() {
+  const panel = document.getElementById('elecReassignPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  panel.innerHTML = '<div style="color:var(--dash-muted);font-size:.82rem;text-align:center;padding:.75rem;">Loading electricians…</div>';
+  try {
+    const snap = await getDocs(collection(db, 'electricians'));
+    if (snap.empty) { panel.innerHTML = '<div style="color:#f59e0b;font-size:.82rem;">No electricians in Firestore.</div>'; return; }
+    const cards = snap.docs.map(d => {
+      const e = d.data(); const avail = e.available !== false;
+      return `<div class="elec-pick-card" data-id="${d.id}"
+        onclick="selectInstallElec(this,'${d.id}','${(e.name||'—').replace(/'/g,"\'")}',${avail})"
+        style="border:1.5px solid #e2e8f0;border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;cursor:${avail?'pointer':'not-allowed'};opacity:${avail?1:.5};background:#fff;transition:.15s;display:flex;align-items:center;gap:.75rem;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#002060;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">👷</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.88rem;color:#1e293b;">${e.name||'—'}</div>
+          <div style="font-size:.75rem;color:#3b82f6;">📍 NORECO I Electrician · 📞 ${e.phone||e.contactNo||'—'}</div>
+        </div>
+        <span style="font-size:.72rem;font-weight:700;padding:.18rem .55rem;border-radius:999px;${avail?'background:#dcfce7;color:#166534':'background:#fee2e2;color:#991b1b'}">${avail?'Available':'Busy'}</span>
+      </div>`;
+    }).join('');
+    panel.innerHTML = `<div style="font-size:.77rem;color:var(--dash-muted);margin-bottom:.5rem;">Select a replacement electrician:</div>${cards}`;
+  } catch(err) {
+    panel.innerHTML = `<div style="color:#ef4444;font-size:.82rem;">Error: ${err.message}</div>`;
+  }
+};
+
+window.openInstallModal = async (id, name, ref, _legacy) => {
+  currentInstallDocId = id;
+  document.getElementById('installPermitLabel').textContent = `Connection: ${ref} — ${name}`;
+  document.getElementById('installDate').value     = '';
+  document.getElementById('installTech').value     = '';
+  document.getElementById('installNotes').value    = '';
+  document.getElementById('installModal').classList.remove('hidden');
+
+  // Load full application doc to read electricianId / electricianName
+  const elecSection = document.getElementById('installElecSection');
+  elecSection.innerHTML = '<div style="color:var(--dash-muted);font-size:.85rem;text-align:center;padding:1rem;">Loading…</div>';
+  try {
+    const snap = await getDoc(doc(db, 'new_connections', id));
+    currentInstallDocData = snap.exists() ? snap.data() : {};
+    // Pre-fill date if already scheduled
+    if (currentInstallDocData.installDate) {
+      document.getElementById('installDate').value = currentInstallDocData.installDate;
+    }
+    await renderInstallElecSection(currentInstallDocData);
+  } catch(e) {
+    elecSection.innerHTML = `<div style="color:#ef4444;font-size:.82rem;">Error loading application: ${e.message}</div>`;
+  }
+};
+
+window.closeInstallModal = () => {
+  document.getElementById('installModal').classList.add('hidden');
+  currentInstallDocId   = null;
+  currentInstallDocData = null;
+};
+
+window.confirmInstall = async () => {
+  const date = document.getElementById('installDate').value;
+  const tech = document.getElementById('installTech').value;
+  if (!date)  { showToast('Please set an installation date.','error'); return; }
+  if (!tech)  { showToast('Please assign an electrician before confirming.','error'); return; }
+  const btn = document.getElementById('confirmInstallBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    await updateDoc(doc(db,'new_connections',currentInstallDocId), {
+      status:       'Scheduled',
+      installDate:  date,
+      installTech:  tech,
+      installNotes: document.getElementById('installNotes').value,
+      scheduledAt:  serverTimestamp()
+    });
+    closeInstallModal();
+    showToast('Installation scheduled!', 'success');
+    pushActivity('🔧', `Installation scheduled — electrician: <strong>${tech}</strong> on ${date}`, 'just now');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.textContent = '✓ Confirm Schedule'; btn.disabled = false;
+  }
+};
+
+// ── OUTAGES ─────────────────────────────────────────────────────
+window.postOutage = async function(){
+  const area    = document.getElementById('outageArea').value.trim();
+  const date    = document.getElementById('outageDate').value;
+  const time    = document.getElementById('outageTime').value.trim();
+  const reason  = document.getElementById('outageReason').value.trim();
+  const details = document.getElementById('outageDetails').value.trim();
+  const btn     = document.getElementById('postOutageBtn');
+
+  if(!area || !date || !time || !reason){
+    showToast('Please fill all required fields.','error');
+    return;
+  }
+
+  btn.textContent = 'Posting…'; btn.disabled = true;
+  try {
+    await addDoc(collection(db,'interruptions'),{
+      area, date, time, reason, details,
+      postedBy: user?.name || user?.email || 'Staff',
+      postedAt: serverTimestamp()
+    });
+    // clear form
+    ['outageArea','outageDate','outageTime','outageReason','outageDetails']
+      .forEach(id => document.getElementById(id).value = '');
+    showToast('Interruption posted!','success');
+    pushActivity('⚡', `Power interruption posted — <strong>${area}</strong>`, 'just now');
+  } catch(e){
+    showToast('Error: '+e.message,'error');
+  } finally {
+    btn.textContent = '⚡ Post Interruption'; btn.disabled = false;
+  }
+};
+
+// Load outages realtime
+onSnapshot(query(collection(db,'interruptions'), orderBy('postedAt','desc')), (snap) => {
+  const tbody = document.getElementById('outagesTableBody');
+  if(!tbody) return;
+  if(snap.empty){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--dash-muted);">No interruptions posted yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = snap.docs.map(d => {
+    const o = d.data();
+    const dateLabel = o.date ? new Date(o.date+'T00:00').toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}) : '—';
+    return `<tr>
+      <td><strong>${dateLabel}</strong></td>
+      <td>${o.time||'—'}</td>
+      <td>${o.area||'—'}</td>
+      <td style="max-width:240px;white-space:normal;font-size:.8rem;">${o.reason||'—'}</td>
+      <td style="font-size:.78rem;color:var(--dash-muted);">${o.postedBy||'—'}</td>
+      <td>
+        <button onclick="deleteOutage('${d.id}')"
+          style="background:#fee2e2;color:#991b1b;border:none;padding:.3rem .7rem;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;">
+          🗑 Delete
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+});
+
+window.deleteOutage = async function(id){
+  if(!confirm('Delete this interruption notice?')) return;
+  try {
+    await deleteDoc(doc(db,'interruptions',id));
+    showToast('Interruption deleted.','success');
+  } catch(e){
+    showToast('Error: '+e.message,'error');
+  }
+};
+</script>
+</body>
+</html>

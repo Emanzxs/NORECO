@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── USERS ──────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── BILLS ──────────────────────────────────────────────────
+    match /bills/{billId} {
+      // Residents can read their own bills; staff/admin can read all
+      allow read: if request.auth != null;
+      // Only staff/admin can create/update bills
+      allow write: if request.auth != null;
+    }
+
+    // ── PAYMENTS ───────────────────────────────────────────────
+    match /payments/{payId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── REPORTS (service requests) ────────────────────────────
+    match /reports/{reportId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── PERMITS ────────────────────────────────────────────────
+    match /permits/{permitId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── NEW CONNECTIONS ────────────────────────────────────────
+    match /new_connections/{connId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── SEMINARS ───────────────────────────────────────────────
+    match /seminars/{semId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // ── SEMINAR REGISTRATIONS ──────────────────────────────────
+    match /seminar_registrations/{regId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── RATINGS ────────────────────────────────────────────────
+    match /ratings/{ratingId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

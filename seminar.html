@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Seminar Registration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+    <a href="connection-guide.html"> 📋 Connection Guide</a>
+    <a href="new-connection.html">🔌 Apply  Connection</a> <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <h2 class="section-title">📅 Seminar Registration</h2>
+  <p class="section-sub">Register for safety seminars and training sessions. Attendance is required for new electrical connections.</p>
+
+  <div id="seminarList" class="seminar-cards">
+    <p style="color:var(--gray-500);">No seminars scheduled yet. Check back soon.</p>
+  </div>
+
+  <!-- Registration Modal -->
+  <div class="modal-overlay hidden" id="semRegModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeSemModal()">✕</button>
+      <h3>📋 Register for Seminar</h3>
+      <p style="color:var(--gray-500);margin-bottom:1.5rem;" id="semModalTitle"></p>
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="semName" placeholder="Juan Dela Cruz" required>
+      </div>
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" id="semEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="semPhone" placeholder="09XXXXXXXXX" required>
+      </div>
+      <button class="btn btn-blue btn-full" onclick="confirmSemReg()" id="confirmSemBtn" style="margin-top:.5rem;">
+        ✓ Confirm Registration
+      </button>
+    </div>
+  </div>
+
+  <!-- My Registrations (realtime) -->
+  <div class="table-wrap" style="margin-top:2rem;">
+    <div class="table-head"><h3>📌 My Registrations</h3></div>
+    <table>
+      <thead><tr>
+        <th>Seminar</th><th>Date</th><th>Time</th><th>Venue</th><th>Status</th>
+      </tr></thead>
+      <tbody id="mySemsBody">
+        <tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:2rem;">No registrations yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script type="module">
+import { db, collection, addDoc, onSnapshot, query,
+         orderBy, serverTimestamp, where } from './firebase-config.js';
+
+const user = JSON.parse(localStorage.getItem('ecmsUser') || 'null');
+let selectedSeminar = null;
+let myRegIds = [];
+
+// Store seminar data by Firestore doc ID — avoids passing raw strings
+// through inline onclick attributes (which breaks on apostrophes etc.)
+const seminarDataMap = {};
+
+// ── LOAD SEMINARS (realtime from Firestore) ────────────────────
+onSnapshot(query(collection(db,'seminars')), (snap) => {
+  const list = document.getElementById('seminarList');
+  if (snap.empty) {
+    list.innerHTML = '<p style="color:var(--gray-500);">No seminars scheduled yet. Check back soon.</p>';
+    return;
+  }
+
+  // Populate the lookup map
+  snap.docs.forEach(d => {
+    seminarDataMap[d.id] = { id: d.id, ...d.data() };
+  });
+
+  list.innerHTML = snap.docs.map(d => {
+    const s = d.data();
+    const id = d.id;
+    const available = (s.slots||0) - (s.taken||0);
+    const isReg = myRegIds.includes(id);
+    return `
+      <div class="seminar-card">
+        <span class="seminar-date">📅 ${s.date}</span>
+        <h3>${s.title}</h3>
+        <p>${s.desc||''}</p>
+        <div class="seminar-meta">
+          <span>🕐 ${s.time||''}</span>
+          <span>📍 ${s.location||s.venue||''}</span>
+        </div>
+        <div class="seminar-meta">
+          <span>👥 ${available} slot(s) left of ${s.slots||0}</span>
+        </div>
+        ${isReg
+          ? '<span class="badge approved">✓ Registered</span>'
+          : available > 0
+          ? '<button class="btn btn-blue btn-full" onclick="openSemModal(\'' + id + '\')">Register Now</button>'
+          : '<span class="badge overdue">Fully Booked</span>'
+        }
+      </div>
+    `;
+  }).join('');
+});
+
+// ── LOAD MY REGISTRATIONS (realtime) ──────────────────────────
+const myRegsQuery = user?.uid
+  ? query(collection(db,'seminar_registrations'), where('uid','==',user.uid))
+  : query(collection(db,'seminar_registrations'));
+
+onSnapshot(myRegsQuery, (snap) => {
+  myRegIds = snap.docs.map(d => d.data().seminarId);
+  const tbody = document.getElementById('mySemsBody');
+  if (snap.empty) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:2rem;">No registrations yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = snap.docs.map(d => {
+    const r = d.data();
+    return `
+      <tr>
+        <td><strong>${r.title||'—'}</strong></td>
+        <td>${r.date||'—'}</td>
+        <td>${r.time||'—'}</td>
+        <td>${r.venue||r.location||'—'}</td>
+        <td><span class="badge approved">${r.status||'Confirmed'}</span></td>
+      </tr>
+    `;
+  }).join('');
+});
+
+// ── MODAL ──────────────────────────────────────────────────────
+window.openSemModal = function(id) {
+  const s = seminarDataMap[id];
+  if (!s) { showToast('Could not load seminar data. Please try again.', 'error'); return; }
+  selectedSeminar = s;
+  document.getElementById('semModalTitle').textContent = `${s.title} — ${s.date}`;
+  // Clear previous form values
+  document.getElementById('semName').value = '';
+  document.getElementById('semEmail').value = '';
+  document.getElementById('semPhone').value = '';
+  document.getElementById('semRegModal').classList.remove('hidden');
+};
+
+window.closeSemModal = function() {
+  document.getElementById('semRegModal').classList.add('hidden');
+  selectedSeminar = null;
+};
+
+window.confirmSemReg = async function() {
+  if (!selectedSeminar) {
+    showToast('No seminar selected. Please close and try again.', 'error');
+    return;
+  }
+  const name  = document.getElementById('semName').value.trim();
+  const email = document.getElementById('semEmail').value.trim();
+  const phone = document.getElementById('semPhone').value.trim();
+  if (!name || !email || !phone) { showToast('Please fill all required fields.', 'error'); return; }
+
+  const btn = document.getElementById('confirmSemBtn');
+  btn.textContent = 'Registering…'; btn.disabled = true;
+
+  try {
+    await addDoc(collection(db,'seminar_registrations'), {
+      seminarId: selectedSeminar.id,
+      title:     selectedSeminar.title     || '',
+      date:      selectedSeminar.date      || '',
+      time:      selectedSeminar.time      || '',
+      venue:     selectedSeminar.venue     || selectedSeminar.location || '',
+      location:  selectedSeminar.location  || selectedSeminar.venue   || '',
+      name, email, phone,
+      uid:       user?.uid || 'guest',
+      status:    'Confirmed',
+      createdAt: serverTimestamp()
+    });
+    const registeredTitle = selectedSeminar.title;
+    closeSemModal();
+    showToast('Registered for "' + registeredTitle + '"!', 'success');
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.textContent = '✓ Confirm Registration'; btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Rate Technician</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a> <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="form-card" style="max-width:560px;">
+    <h2 class="form-title">⭐ Rate Your Technician</h2>
+    <p class="form-subtitle">Your feedback helps us improve our service quality.</p>
+    <div class="form-info" id="rateRefInfo">Loading…</div>
+
+    <form id="rateForm">
+      <div class="form-group" style="text-align:center;">
+        <label>Overall Service Rating *</label>
+        <div class="star-rating" style="justify-content:center;margin-top:.5rem;">
+          <input type="radio" name="rating" id="s5" value="5"><label for="s5">★</label>
+          <input type="radio" name="rating" id="s4" value="4"><label for="s4">★</label>
+          <input type="radio" name="rating" id="s3" value="3"><label for="s3">★</label>
+          <input type="radio" name="rating" id="s2" value="2"><label for="s2">★</label>
+          <input type="radio" name="rating" id="s1" value="1"><label for="s1">★</label>
+        </div>
+        <span class="error" id="ratingErr"></span>
+      </div>
+      <div id="groupInfoBox" style="display:none;background:var(--blue-light,#eff6ff);border:1.5px solid var(--blue-bright,#3b82f6);border-radius:10px;padding:.85rem 1rem;margin-bottom:.75rem;">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1e40af;margin-bottom:.3rem;">👷 Assigned Maintenance Group</div>
+        <div style="font-size:1rem;font-weight:700;color:#002060;" id="groupNameDisplay">—</div>
+        <div style="font-size:.82rem;color:#3b82f6;margin-top:.15rem;" id="groupLeaderDisplay"></div>
+      </div>
+      <div class="form-group">
+        <label>What did the technician do well?</label>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem;">
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">⚡ Quick response</button>
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">🔧 Professional work</button>
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">😊 Friendly attitude</button>
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">🧹 Left area clean</button>
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">📋 Explained clearly</button>
+          <button type="button" class="tag-btn" onclick="toggleTag(this)">⏰ On time</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Additional Feedback</label>
+        <textarea id="feedback" rows="4" placeholder="Tell us about your experience…"></textarea>
+      </div>
+      <button type="submit" class="btn btn-blue btn-full" id="submitRateBtn">📤 Submit Feedback</button>
+    </form>
+
+    <div id="rateSuccess" class="success-box hidden">
+      <h3>✓ Thank you for your feedback!</h3>
+      <p>Your rating has been recorded and helps us improve our services.</p>
+      <a href="report.html" class="btn btn-blue" style="margin-top:1rem;display:inline-block;">View My Reports</a>
+    </div>
+  </div>
+</div>
+
+<style>
+.tag-btn {
+  background:var(--gray-100); border:1.5px solid var(--gray-300); border-radius:50px;
+  padding:.35rem .85rem; font-size:.85rem; font-weight:600; cursor:pointer;
+  transition:all .2s; font-family:'DM Sans',sans-serif; color:var(--gray-700);
+}
+.tag-btn.selected { background:var(--blue-light); border-color:var(--blue-bright); color:var(--blue-deep); }
+</style>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script type="module">
+import { db, collection, addDoc, serverTimestamp } from './firebase-config.js';
+
+const user   = JSON.parse(localStorage.getItem('ecmsUser') || 'null');
+const params = new URLSearchParams(window.location.search);
+const ref    = params.get('ref') || 'N/A';
+const groupName   = decodeURIComponent(params.get('group') || '');
+const groupLeader = decodeURIComponent(params.get('leader') || '');
+
+document.getElementById('rateRefInfo').innerHTML = `Rating for request: <strong>${ref}</strong>`;
+
+// Show group info box if group is known
+if (groupName) {
+  document.getElementById('groupInfoBox').style.display = 'block';
+  document.getElementById('groupNameDisplay').textContent = '🏗️ ' + groupName;
+  if (groupLeader) document.getElementById('groupLeaderDisplay').textContent = '👤 Leader: ' + groupLeader;
+}
+
+window.toggleTag = (btn) => btn.classList.toggle('selected');
+
+document.getElementById('rateForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const rating = document.querySelector('input[name="rating"]:checked');
+  if (!rating) { document.getElementById('ratingErr').textContent = 'Please select a rating.'; return; }
+
+  const btn = document.getElementById('submitRateBtn');
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+
+  try {
+    const tags = [...document.querySelectorAll('.tag-btn.selected')].map(b => b.textContent.trim());
+    await addDoc(collection(db,'ratings'), {
+      ref,
+      rating:      Number(rating.value),
+      groupName:   groupName || null,
+      groupLeader: groupLeader || null,
+      tags,
+      feedback:    document.getElementById('feedback').value,
+      uid:         user?.uid || 'guest',
+      createdAt:   serverTimestamp()
+    });
+    document.getElementById('rateForm').classList.add('hidden');
+    document.getElementById('rateSuccess').classList.remove('hidden');
+    showToast('Feedback submitted!', 'success');
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.textContent = '📤 Submit Feedback'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NORECO I – New Connection Application</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .hidden{
+      display:none !important;
+    }
+
+    .nc-layout{
+      display:grid;
+      grid-template-columns:270px 1fr;
+      gap:1.5rem;
+      align-items:start;
+    }
+
+    .nc-sidebar{
+      position:sticky;
+      top:1rem;
+      background:#fff;
+      border-radius:16px;
+      border:1px solid #e5e7eb;
+      overflow:hidden;
+    }
+
+    .nc-sidebar-header{
+      background:#002060;
+      color:#fff;
+      padding:1rem;
+    }
+
+    .nc-sidebar-header h3{
+      margin:0;
+      font-size:.95rem;
+    }
+
+    .nc-sidebar-header p{
+      margin:.2rem 0 0;
+      font-size:.75rem;
+      opacity:.7;
+    }
+
+    .nc-steps{
+      padding:.8rem;
+      display:flex;
+      flex-direction:column;
+      gap:.4rem;
+    }
+
+    .nc-step{
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      padding:.6rem;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .nc-step.active{
+      background:#eff6ff;
+    }
+
+    .sdot{
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:#e2e8f0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.75rem;
+      font-weight:700;
+    }
+
+    .nc-step.active .sdot{
+      background:#002060;
+      color:#fff;
+    }
+
+    .sinfo .st{
+      font-size:.82rem;
+      font-weight:700;
+    }
+
+    .sinfo .ss{
+      font-size:.7rem;
+      color:#94a3b8;
+    }
+
+    .step-panel{
+      display:none;
+    }
+
+    .step-panel.active{
+      display:block;
+    }
+
+    .nc-card{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    .nc-card-hd{
+      padding:1rem 1.2rem;
+      background:#f8fafc;
+      border-bottom:1px solid #e5e7eb;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+
+    .nc-card-body{
+      padding:1.2rem;
+    }
+
+    .step-nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:1rem 1.2rem;
+      border-top:1px solid #e5e7eb;
+      background:#f8fafc;
+    }
+
+    .btn-prev,
+    .btn-next{
+      border:none;
+      border-radius:8px;
+      padding:.65rem 1.2rem;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .btn-prev{
+      background:#e2e8f0;
+    }
+
+    .btn-next{
+      background:#002060;
+      color:#fff;
+    }
+
+    .conn-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1rem;
+    }
+
+    .conn-btn{
+      border:2px solid #e2e8f0;
+      border-radius:12px;
+      padding:1rem;
+      cursor:pointer;
+    }
+
+    .conn-btn.selected{
+      border-color:#002060;
+      background:#eff6ff;
+    }
+
+    .fees-box{
+      margin-top:1rem;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1rem;
+    }
+
+    .fee-panel{
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:1rem;
+    }
+
+    .fsr,
+    .fst{
+      display:flex;
+      justify-content:space-between;
+      margin:.4rem 0;
+      font-size:.85rem;
+    }
+
+    .fst{
+      font-weight:700;
+      border-top:1px solid #e5e7eb;
+      padding-top:.5rem;
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .form-group label{
+      font-size:.8rem;
+      font-weight:700;
+      margin-bottom:.35rem;
+    }
+
+    .form-group input,
+    .form-group select{
+      padding:.8rem;
+      border:1px solid #cbd5e1;
+      border-radius:8px;
+    }
+
+    .nc-progress{
+      height:5px;
+      background:#e2e8f0;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:1rem;
+    }
+
+    .nc-progress-bar{
+      height:100%;
+      background:#002060;
+      transition:.3s;
+    }
+
+    .ft-amt{
+      font-size:1.5rem;
+      font-weight:800;
+      color:#002060;
+    }
+
+    .pay-btn{
+      width:100%;
+      border:none;
+      border-radius:10px;
+      padding:1rem;
+      background:#002060;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:1rem;
+    }
+
+    /* ── DOCUMENT UPLOAD ITEMS ─────────────────────── */
+    .doc-upload-item{
+      border:1.5px solid #e5e7eb;
+      border-radius:12px;
+      padding:1rem 1.1rem;
+      margin-bottom:.85rem;
+      background:#fff;
+      transition:.2s;
+    }
+    .doc-upload-item.uploaded{
+      border-color:#86efac;
+      background:#f0fdf4;
+    }
+    .doc-upload-top{
+      display:flex;
+      gap:.75rem;
+      align-items:flex-start;
+      margin-bottom:.7rem;
+    }
+    .doc-status-dot{
+      font-size:1rem;
+      flex-shrink:0;
+      margin-top:.1rem;
+    }
+    .doc-info{
+      flex:1;
+    }
+    .doc-title{
+      font-size:.87rem;
+      font-weight:700;
+      color:#1e293b;
+      line-height:1.4;
+      margin-bottom:.3rem;
+    }
+    .doc-hint{
+      font-size:.75rem;
+      color:#64748b;
+      line-height:1.5;
+      margin-bottom:.45rem;
+    }
+    .doc-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.4rem;
+      margin-top:.35rem;
+    }
+    .doc-upload-row{
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      margin-left:1.75rem;
+    }
+    .doc-upload-btn{
+      border:1.5px solid #002060;
+      background:#fff;
+      color:#002060;
+      border-radius:8px;
+      padding:.45rem .9rem;
+      font-size:.78rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s;
+    }
+    .doc-upload-btn:hover{
+      background:#eff6ff;
+    }
+    .doc-filename{
+      font-size:.75rem;
+      color:#16a34a;
+      font-weight:600;
+    }
+
+    /* ── ELECTRICIAN CARD ───────────────────────────── */
+    .elec-card{
+      border:1.5px solid #e5e7eb;
+      border-radius:12px;
+      padding:.9rem 1.1rem;
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      cursor:pointer;
+      transition:.15s;
+      background:#fff;
+    }
+    .elec-card:hover{
+      border-color:#93c5fd;
+    }
+    .elec-card.selected{
+      border-color:#002060;
+      background:#eff6ff;
+    }
+    .elec-avatar{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#002060,#1a3a7a);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      flex-shrink:0;
+    }
+    .elec-info{
+      flex:1;
+    }
+    .elec-name{
+      font-size:.9rem;
+      font-weight:700;
+      color:#1e293b;
+    }
+    .elec-area{
+      font-size:.75rem;
+      color:#64748b;
+      margin-top:.1rem;
+    }
+    .elec-avail{
+      font-size:.7rem;
+      font-weight:700;
+      padding:.2rem .6rem;
+      border-radius:999px;
+      background:#dcfce7;
+      color:#166534;
+    }
+    .elec-avail.busy{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    /* ── RECEIPT UPLOAD STYLES ─────────────────────── */
+    .receipt-section{
+      margin-top:1.2rem;
+      border:2px dashed #a855f7;
+      border-radius:12px;
+      padding:1.1rem 1.2rem;
+      background:#faf5ff;
+    }
+    .receipt-section-title{
+      font-size:.88rem;
+      font-weight:700;
+      color:#5b21b6;
+      margin-bottom:.4rem;
+    }
+    .receipt-section-sub{
+      font-size:.77rem;
+      color:#7c3aed;
+      margin-bottom:.9rem;
+      line-height:1.5;
+    }
+    .receipt-drop-zone-nc{
+      border:1.5px dashed #c4b5fd;
+      border-radius:10px;
+      padding:1.4rem 1rem;
+      text-align:center;
+      cursor:pointer;
+      transition:background .2s, border-color .2s;
+      background:#fff;
+    }
+    .receipt-drop-zone-nc:hover,
+    .receipt-drop-zone-nc.dragover{
+      background:#ede9fe;
+      border-color:#7c3aed;
+    }
+    .receipt-drop-zone-nc input[type="file"]{ display:none; }
+    .nc-receipt-preview{
+      width:100%;
+      max-height:160px;
+      object-fit:contain;
+      border-radius:8px;
+      margin-top:.75rem;
+      display:none;
+      border:1px solid #e5e7eb;
+    }
+    .nc-receipt-progress{
+      height:6px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+      margin-top:.75rem;
+      display:none;
+    }
+    .nc-receipt-progress-bar{
+      height:100%;
+      background:linear-gradient(90deg,#7c3aed,#a855f7);
+      width:0%;
+      transition:width .3s ease;
+    }
+    .upload-receipt-btn{
+      width:100%;
+      border:none;
+      border-radius:10px;
+      padding:.8rem;
+      background:linear-gradient(135deg,#7c3aed,#a855f7);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:.85rem;
+      font-size:.9rem;
+      transition:opacity .2s;
+    }
+    .upload-receipt-btn:hover{ opacity:.88; }
+    .upload-receipt-btn:disabled{ opacity:.5; cursor:not-allowed; }
+    .nc-receipt-success{
+      display:none;
+      text-align:center;
+      padding:.85rem;
+      background:#f0fdf4;
+      border-radius:8px;
+      color:#166534;
+      font-weight:600;
+      margin-top:.75rem;
+      font-size:.87rem;
+    }
+    .nc-receipt-view-link{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      color:#7c3aed;
+      font-size:.8rem;
+      font-weight:600;
+      text-decoration:none;
+      margin-top:.35rem;
+    }
+    .nc-receipt-view-link:hover{ text-decoration:underline; }
+    .payment-toast-nc{
+      position:fixed;
+      bottom:1.5rem;
+      left:50%;
+      transform:translateX(-50%);
+      background:#1e293b;
+      color:#fff;
+      border-radius:12px;
+      padding:1rem 1.75rem;
+      font-size:.9rem;
+      z-index:9999;
+      box-shadow:0 8px 32px rgba(0,0,0,.25);
+      animation:slideUpNc .35s ease;
+    }
+    .payment-toast-nc.success{ background:#166534; }
+    .payment-toast-nc.error  { background:#991b1b; }
+    @keyframes slideUpNc{
+      from{ transform:translateX(-50%) translateY(20px); opacity:0; }
+      to  { transform:translateX(-50%) translateY(0);    opacity:1; }
+    }
+
+    @media(max-width:768px){
+
+      .nc-layout{
+        grid-template-columns:1fr;
+      }
+
+      .conn-grid,
+      .fees-box,
+      .form-row{
+        grid-template-columns:1fr;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+
+  <div class="nc-progress">
+    <div class="nc-progress-bar" id="progressBar" style="width:16.6%"></div>
+  </div>
+
+  <div class="nc-layout">
+
+    <!-- SIDEBAR -->
+    <div class="nc-sidebar">
+
+      <div class="nc-sidebar-header">
+        <h3>Application Steps</h3>
+        <p>Complete all steps</p>
+      </div>
+
+      <div class="nc-steps">
+
+        <div class="nc-step active" id="ss0" onclick="goToStep(0)">
+          <div class="sdot" id="dot0">0</div>
+          <div class="sinfo">
+            <div class="st">Processing Mode</div>
+            <div class="ss">Select type</div>
+          </div>
+        </div>
+
+        <div class="nc-step" id="ss1" onclick="goToStep(1)">
+          <div class="sdot" id="dot1">1</div>
+          <div class="sinfo">
+            <div class="st">Applicant Info</div>
+            <div class="ss">Personal details</div>
+          </div>
+        </div>
+
+        <div class="nc-step" id="ss2" onclick="goToStep(2)">
+          <div class="sdot" id="dot2">2</div>
+          <div class="sinfo">
+            <div class="st">What To Do</div>
+            <div class="ss">PMES checking</div>
+          </div>
+        </div>
+
+        <div class="nc-step" id="ss3" onclick="goToStep(3)">
+          <div class="sdot" id="dot3">3</div>
+          <div class="sinfo">
+            <div class="st">Electrician</div>
+            <div class="ss">Choose electrician</div>
+          </div>
+        </div>
+
+        <div class="nc-step" id="ss4" onclick="goToStep(4)">
+          <div class="sdot" id="dot4">4</div>
+          <div class="sinfo">
+            <div class="st">Requirements</div>
+            <div class="ss">Upload docs</div>
+          </div>
+        </div>
+
+        <div class="nc-step" id="ss5" onclick="goToStep(5)">
+          <div class="sdot" id="dot5">5</div>
+          <div class="sinfo">
+            <div class="st">Payment</div>
+            <div class="ss">Checkout</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div>
+
+      <form id="ncForm">
+
+        <!-- STEP 0 -->
+        <div class="step-panel active" id="panel0">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>⚙️ Application Processing Mode</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <div class="conn-grid">
+
+                <div
+                  class="conn-btn selected"
+                  id="selfServiceCard"
+                  onclick="selectProcessingMode('self')"
+                >
+                  <h3>💻 Self-Service</h3>
+
+                  <p>
+                    Upload documents personally and hire your own electrician.
+                  </p>
+                </div>
+
+                <div
+                  class="conn-btn"
+                  id="assistedCard"
+                  onclick="selectProcessingMode('assisted')"
+                >
+                  <h3>🏢 Assisted Processing</h3>
+
+                  <p>
+                    NORECO assists in electrician coordination and processing.
+                  </p>
+                </div>
+
+              </div>
+
+              <div class="fees-box">
+
+                <div class="fee-panel">
+
+                  <h4>💻 Self-Service Fees</h4>
+
+                  <div class="fsr">
+                    <span>Membership</span>
+                    <span>₱500</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Inspection</span>
+                    <span>₱300</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Meter</span>
+                    <span>₱1,200</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Connection</span>
+                    <span>₱1,000</span>
+                  </div>
+
+                  <div class="fst">
+                    <span>Total</span>
+                    <span>₱3,000</span>
+                  </div>
+
+                </div>
+
+                <div class="fee-panel">
+
+                  <h4>🏢 Assisted Fees</h4>
+
+                  <div class="fsr">
+                    <span>Membership</span>
+                    <span>₱500</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Inspection</span>
+                    <span>₱300</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Meter</span>
+                    <span>₱1,200</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Coordination</span>
+                    <span>₱2,000</span>
+                  </div>
+
+                  <div class="fsr">
+                    <span>Processing</span>
+                    <span>₱1,500</span>
+                  </div>
+
+                  <div class="fst">
+                    <span>Total</span>
+                    <span>₱7,000</span>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="step-nav">
+              <span>Step 0 of 5</span>
+
+              <button
+                type="button"
+                class="btn-next"
+                onclick="nextStep(0)"
+              >
+                Continue →
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="step-panel" id="panel1">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>👤 Applicant Information</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <div class="form-row">
+
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" id="ncName" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Email Address *</label>
+                  <input type="email" id="ncEmail" required />
+                </div>
+
+              </div>
+
+              <div class="form-row">
+
+                <div class="form-group">
+                  <label>Phone Number *</label>
+                  <input type="tel" id="ncPhone" required />
+                </div>
+
+              </div>
+
+              <!-- FIXED BROKEN SECTION -->
+              <div class="form-row">
+
+                <div class="form-group">
+
+                </div>
+
+                <div class="form-group">
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="step-nav">
+
+              <button
+                type="button"
+                class="btn-prev"
+                onclick="prevStep(1)"
+              >
+                ← Back
+              </button>
+
+              <button
+                type="button"
+                class="btn-next"
+                onclick="nextStep(1)"
+              >
+                Next →
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-panel" id="panel2">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>📋 Pre-Membership Education Seminar (PMES)</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <p style="font-size:.85rem;color:#64748b;margin-bottom:1.2rem;line-height:1.6;">
+                PMES is required before applying for a new connection. After attending, you will receive a <strong>Certificate of Attendance</strong> which must be uploaded here.
+              </p>
+
+              <!-- YES / NO toggle cards -->
+              <div class="conn-grid" style="margin-bottom:1.2rem;">
+
+                <div class="conn-btn selected" id="pmesYesCard" onclick="selectPmes('yes')">
+                  <div style="font-size:1.5rem;margin-bottom:.4rem;">✅</div>
+                  <h3 style="margin:0 0 .3rem;font-size:.95rem;">Yes, I attended</h3>
+                  <p style="margin:0;font-size:.78rem;color:#64748b;">I have my Certificate of Attendance ready.</p>
+                </div>
+
+                <div class="conn-btn" id="pmesNoCard" onclick="selectPmes('no')">
+                  <div style="font-size:1.5rem;margin-bottom:.4rem;">❌</div>
+                  <h3 style="margin:0 0 .3rem;font-size:.95rem;">No, not yet</h3>
+                  <p style="margin:0;font-size:.78rem;color:#64748b;">I have not attended PMES yet.</p>
+                </div>
+
+              </div>
+
+              <!-- Warning shown when No is selected -->
+              <div id="pmesWarning" class="hidden" style="background:#fff7ed;border:1.5px solid #fb923c;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;">
+                <div style="font-weight:700;color:#c2410c;margin-bottom:.4rem;">⚠️ PMES Attendance Required</div>
+                <p style="font-size:.83rem;color:#7c2d12;margin:0 0 .75rem;line-height:1.6;">
+                  You must attend the Pre-Membership Education Seminar before you can apply for a new connection. It is <strong>free</strong> and a <strong>Certificate of Attendance</strong> will be given after.
+                </p>
+                <a href="seminar.html" style="display:inline-flex;align-items:center;gap:.4rem;background:#002060;color:#fff;font-size:.8rem;font-weight:700;padding:.5rem 1rem;border-radius:8px;text-decoration:none;">
+                  📅 View Seminar Schedule
+                </a>
+              </div>
+
+              <!-- Upload shown when Yes is selected -->
+              <div id="pmesUploadArea" style="margin-top:.5rem;">
+                <div class="form-group">
+                  <label style="font-size:.85rem;font-weight:700;margin-bottom:.5rem;display:block;">
+                    📎 Upload Certificate of Attendance <span style="color:#e11d48;">*</span>
+                  </label>
+                  <div id="pmesDropzone" style="border:2px dashed #cbd5e1;border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:.2s;" onclick="document.getElementById('pmesFile').click()">
+                    <div style="font-size:2rem;margin-bottom:.4rem;">📄</div>
+                    <div style="font-size:.83rem;font-weight:600;color:#334155;">Click to upload or drag and drop</div>
+                    <div style="font-size:.73rem;color:#94a3b8;margin-top:.2rem;">PDF, JPG, PNG accepted</div>
+                    <input type="file" id="pmesFile" accept=".pdf,image/*" style="display:none" onchange="onPmesFileChange(this)">
+                  </div>
+                  <div id="pmesFileName" style="display:none;margin-top:.6rem;font-size:.82rem;color:#16a34a;font-weight:600;"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="step-nav">
+
+              <button
+                type="button"
+                class="btn-prev"
+                onclick="prevStep(2)"
+              >
+                ← Back
+              </button>
+
+              <button
+                type="button"
+                class="btn-next"
+                id="pmesNextBtn"
+                onclick="nextStep(2)"
+              >
+                Next →
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-panel" id="panel3">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>👷 Choose an Electrician</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <!-- Assisted mode notice -->
+              <div id="assistedElecNotice" class="hidden" style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;">
+                <div style="font-weight:700;color:#1e40af;margin-bottom:.3rem;">🏢 Assisted Processing Selected</div>
+                <p style="font-size:.83rem;color:#1e3a8a;margin:0;line-height:1.6;">
+                  NORECO I will assign an authorized electrician to your area. No need to select one manually. You may proceed to the next step.
+                </p>
+              </div>
+
+              <!-- Self-service electrician list -->
+              <div id="electricianListArea">
+
+                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem;line-height:1.6;">
+                  Select a NORECO I authorized electrician below. You may also choose to hire your own.
+                </p>
+
+                <!-- Electrician cards container — populated from Firebase -->
+                <div id="electricianCards" style="display:flex;flex-direction:column;gap:.8rem;">
+                  <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.85rem;">
+                    ⏳ Loading available electricians…
+                  </div>
+                </div>
+
+                <!-- Hire own option -->
+                <div
+                  class="conn-btn"
+                  id="ownElecCard"
+                  onclick="selectElectrician('own', 'I will hire my own electrician')"
+                  style="margin-top:1rem;display:flex;align-items:center;gap:.8rem;"
+                >
+                  <div style="font-size:1.8rem;">🔧</div>
+                  <div>
+                    <h3 style="margin:0 0 .2rem;font-size:.92rem;">I will hire my own electrician</h3>
+                    <p style="margin:0;font-size:.77rem;color:#64748b;">Make sure they are a licensed Master Electrician or Electrical Engineer.</p>
+                  </div>
+                </div>
+
+                <div id="elecSelectedNotice" class="hidden" style="margin-top:1rem;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:.75rem 1rem;font-size:.83rem;color:#166534;font-weight:600;">
+                  ✅ <span id="elecSelectedName"></span>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="step-nav">
+
+              <button
+                type="button"
+                class="btn-prev"
+                onclick="prevStep(3)"
+              >
+                ← Back
+              </button>
+
+              <button
+                type="button"
+                class="btn-next"
+                id="elecNextBtn"
+                onclick="nextStep(3)"
+              >
+                Next →
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-panel" id="panel4">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>📄 Upload Required Documents</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <p style="font-size:.83rem;color:#64748b;margin-bottom:1.2rem;line-height:1.6;">
+                Upload each required document below. Files must be clear and readable (PDF, JPG, or PNG). Download the forms you need from the links provided, fill them out, then upload.
+              </p>
+
+              <!-- Doc 1: Membership Form -->
+              <div class="doc-upload-item" id="docItem0">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot0">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Membership Form / Contract for Electric Service <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Residential → Membership Form &nbsp;|&nbsp; Commercial/Industrial → Contract for Electric Service</div>
+                    <div class="doc-links">
+                      <a href="assets/forms/membershipform.pdf" download class="dl-pill">⬇ Membership Form</a>
+                      <a href="assets/forms/Contract-for-Electric-Service.pdf" download class="dl-pill secondary">⬇ Contract for Electric Service</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile0" accept=".pdf,image/*" onchange="onDocFileChange(0,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile0').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename0"></span>
+                </div>
+              </div>
+
+              <!-- Doc 2: Electrical Permit -->
+              <div class="doc-upload-item" id="docItem1">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot1">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Electrical Permit (2 copies) <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Acquire from the Office of Building Officials at your Local Government Unit. Upload a clear photo or scan of both copies.</div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile1" accept=".pdf,image/*" onchange="onDocFileChange(1,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile1').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename1"></span>
+                </div>
+              </div>
+
+              <!-- Doc 3: Certificate of Final Inspection -->
+              <div class="doc-upload-item" id="docItem2">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot2">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Certificate of Final Electrical Inspection (2 copies) <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Also from the Office of Building Officials at your Local Government Unit.</div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile2" accept=".pdf,image/*" onchange="onDocFileChange(2,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile2').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename2"></span>
+                </div>
+              </div>
+
+              <!-- Doc 4: Electrical Plan -->
+              <div class="doc-upload-item" id="docItem3">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot3">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Electrical Plan signed by a Professional Electrical Engineer (2 copies) <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Obtain from your electrician, architect, or electrical engineer.</div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile3" accept=".pdf,image/*" onchange="onDocFileChange(3,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile3').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename3"></span>
+                </div>
+              </div>
+
+              <!-- Doc 5: SDW Affidavit of Consent -->
+              <div class="doc-upload-item" id="docItem4">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot4">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Service Drop Wire Affidavit of Consent <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Must be executed by the lot owner or a government official if government-owned. Download the applicable form:</div>
+                    <div class="doc-links">
+                      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-PERSONALLY-OWNED.pdf" download class="dl-pill">⬇ Personally Owned</a>
+                      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-GOVERNMENT-MAYOR.pdf" download class="dl-pill secondary">⬇ Govt Mayor</a>
+                      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-GOVERNMENT-CAPT.pdf" download class="dl-pill secondary">⬇ Govt Capt</a>
+                      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE.pdf" download class="dl-pill secondary">⬇ SDW Standard</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile4" accept=".pdf,image/*" onchange="onDocFileChange(4,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile4').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename4"></span>
+                </div>
+              </div>
+
+              <!-- Doc 6: Electrician License -->
+              <div class="doc-upload-item" id="docItem5">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot5">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Electrician's PRC License / Authorization <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Photocopy of the PRC license of the electrician or electrical engineer who performed the housewiring installation.</div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile5" accept=".pdf,image/*" onchange="onDocFileChange(5,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile5').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename5"></span>
+                </div>
+              </div>
+
+              <!-- Doc 7: Certificate of Completion -->
+              <div class="doc-upload-item" id="docItem6">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot6">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">Certificate of Completion <span class="req-badge-sm req">Required</span></div>
+                    <div class="doc-hint">Issued by the authorized electrician or engineer who performed the housewiring installation.</div>
+                    <div class="doc-links">
+                      <a href="assets/forms/CERTIFICATE-OF-COMPLETION.pdf" download class="dl-pill">⬇ Download Template</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile6" accept=".pdf,image/*" onchange="onDocFileChange(6,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile6').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename6"></span>
+                </div>
+              </div>
+
+              <!-- Doc 8: SDW >100m (optional) -->
+              <div class="doc-upload-item" id="docItem7" style="border-color:#e2e8f0;background:#fafafa;">
+                <div class="doc-upload-top">
+                  <div class="doc-status-dot" id="docDot7">⬜</div>
+                  <div class="doc-info">
+                    <div class="doc-title">SDW Affidavit for connections over 100 meters <span class="req-badge-sm opt">If Applicable</span></div>
+                    <div class="doc-hint">Required only if the service drop wire for your connection exceeds 100 meters.</div>
+                    <div class="doc-links">
+                      <a href="assets/forms/AFFIDAVIT-SDW-100.pdf" download class="dl-pill">⬇ Affidavit-SDW 100</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="doc-upload-row">
+                  <input type="file" id="docFile7" accept=".pdf,image/*" onchange="onDocFileChange(7,this)" style="display:none">
+                  <button type="button" class="doc-upload-btn" onclick="document.getElementById('docFile7').click()">📎 Upload File</button>
+                  <span class="doc-filename" id="docFilename7"></span>
+                </div>
+              </div>
+
+              <!-- Upload progress summary -->
+              <div style="margin-top:1.2rem;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:.8rem 1rem;font-size:.82rem;color:#475569;">
+                📊 Documents uploaded: <strong id="docUploadCount">0 of 7 required</strong>
+              </div>
+
+            </div>
+
+            <div class="step-nav">
+
+              <button
+                type="button"
+                class="btn-prev"
+                onclick="prevStep(4)"
+              >
+                ← Back
+              </button>
+
+              <button
+                type="button"
+                class="btn-next"
+                id="docsNextBtn"
+                onclick="nextStep(4)"
+              >
+                Next →
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="step-panel" id="panel5">
+
+          <div class="nc-card">
+
+            <div class="nc-card-hd">
+              <h3>💳 Payment Summary</h3>
+            </div>
+
+            <div class="nc-card-body">
+
+              <p style="font-size:.83rem;color:#64748b;margin-bottom:1.2rem;line-height:1.6;">
+                Review your application fees below. Payment will be processed securely via PayMongo.
+              </p>
+
+              <!-- Fee breakdown -->
+              <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:1.2rem;">
+
+                <div style="background:#f8fafc;padding:.75rem 1rem;font-size:.8rem;font-weight:700;color:#475569;border-bottom:1px solid #e5e7eb;">
+                  📋 Fee Breakdown — <span id="payModeLabel">Self-Service</span>
+                </div>
+
+                <div style="padding:.8rem 1rem;">
+
+                  <div class="fsr"><span>Membership</span><span>₱500.00</span></div>
+                  <div class="fsr"><span>Inspection</span><span>₱300.00</span></div>
+                  <div class="fsr"><span>Meter</span><span>₱1,200.00</span></div>
+                  <div class="fsr" id="payRowConnection"><span>Connection</span><span>₱1,000.00</span></div>
+                  <div class="fsr hidden" id="payRowCoord"><span>Coordination</span><span>₱2,000.00</span></div>
+                  <div class="fsr hidden" id="payRowProcessing"><span>Processing</span><span>₱1,500.00</span></div>
+
+                  <div class="fst">
+                    <span>Total</span>
+                    <span id="payTotal" style="color:#002060;font-size:1.1rem;">₱3,000.00</span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- Application summary -->
+              <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:.9rem 1rem;margin-bottom:1.2rem;font-size:.82rem;color:#1e3a8a;line-height:1.8;">
+                <div style="font-weight:700;margin-bottom:.4rem;">📝 Application Summary</div>
+                <div>👤 Name: <strong id="sumName">—</strong></div>
+                <div>📧 Email: <strong id="sumEmail">—</strong></div>
+                <div>📱 Phone: <strong id="sumPhone">—</strong></div>
+                <div>⚙️ Mode: <strong id="sumMode">—</strong></div>
+                <div>👷 Electrician: <strong id="sumElec">—</strong></div>
+              </div>
+
+              <!-- PayMongo Button -->
+              <button
+                type="button"
+                class="pay-btn"
+                id="submitBtn"
+                onclick="handlePaymentClick()"
+              >
+                💳 Proceed to Payment — <span id="payBtnAmt">₱3,000.00</span>
+              </button>
+
+              <p style="text-align:center;font-size:.73rem;color:#94a3b8;margin-top:.75rem;">
+                🔒 Secured by PayMongo &nbsp;·&nbsp; GCash, Maya, Credit/Debit Card accepted
+              </p>
+
+              <!-- ── RECEIPT UPLOAD SECTION ────────────────────── -->
+              <div class="receipt-section" id="receiptUploadSection">
+                <div class="receipt-section-title">📎 Already Paid? Upload Your Receipt</div>
+                <div class="receipt-section-sub">
+                  If you paid via GCash, Maya, or bank transfer, attach your payment screenshot here as proof. This will be reviewed by NORECO I staff.
+                </div>
+
+                <!-- Reference Number -->
+    <div class="ref-input-wrap">
+      <label for="receiptRefNumber">📋 Payment Reference Number *</label>
+      <input type="text" id="receiptRefNumber"
+             placeholder="e.g. GC-2026051912345 or 12-digit code"
+             autocomplete="off"
+             oninput="validateRefNumber(this)">
+      <div class="ref-hint">Enter the reference / transaction number shown on your GCash, Maya, or bank receipt.</div>
+    </div>
+
+                <div class="receipt-drop-zone-nc" id="ncReceiptDropZone"
+                     onclick="document.getElementById('ncReceiptFileInput').click()"
+                     ondragover="ncHandleDragOver(event)"
+                     ondragleave="ncHandleDragLeave(event)"
+                     ondrop="ncHandleDrop(event)">
+                  <input type="file" id="ncReceiptFileInput" accept="image/*,.pdf"
+                         onchange="ncHandleFileSelect(event)">
+                  <div id="ncReceiptDropLabel">
+                    <div style="font-size:2rem;margin-bottom:.4rem;">🖼️</div>
+                    <div style="font-weight:600;color:#5b21b6;margin-bottom:.2rem;font-size:.85rem;">Click or drag receipt here</div>
+                    <div style="font-size:.73rem;color:#94a3b8;">JPG, PNG, WEBP, PDF — max 5 MB</div>
+                  </div>
+                  <img id="ncReceiptPreview" class="nc-receipt-preview" alt="Receipt preview">
+                </div>
+
+                <div id="ncReceiptFileName" style="font-size:.76rem;color:#64748b;text-align:center;display:none;margin-top:.4rem;"></div>
+
+                <div class="nc-receipt-progress" id="ncReceiptProgress">
+                  <div class="nc-receipt-progress-bar" id="ncReceiptProgressBar"></div>
+                </div>
+
+                <div class="nc-receipt-success" id="ncReceiptSuccessMsg">
+                  ✅ Receipt uploaded successfully!
+                  <br>
+                  <a id="ncReceiptViewLink" href="#" target="_blank" class="nc-receipt-view-link">
+                    🔗 View Uploaded Receipt
+                  </a>
+                </div>
+
+                <button type="button" class="upload-receipt-btn" id="ncUploadReceiptBtn"
+                        onclick="ncSubmitReceipt()" disabled>
+                  📤 Upload Payment Receipt
+                </button>
+              </div>
+              <!-- ── END RECEIPT UPLOAD ─────────────────────────── -->
+
+            </div>
+
+            <div class="step-nav">
+
+              <button
+                type="button"
+                class="btn-prev"
+                onclick="prevStep(5)"
+              >
+                ← Back
+              </button>
+
+              <span style="font-size:.8rem;color:#94a3b8;">Final Step</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // ── Global state (must be outside module so onclick="" attributes can read/write it) ──
+  window._ncState = {
+    processingMode: 'self',
+    totalFee: 3000
+  };
+</script>
+
+<script type="module">
+
+  import { db, collection, onSnapshot, addDoc, serverTimestamp } from './firebase-config.js';
+  import { uploadFile, supabase } from './supabase-config.js';
+  import { createConnectionPaymentLink } from './paymongo.js';
+
+  /* ── STATE ─────────────────────────────────────── */
+  let curStep       = 0;
+  let processingMode = 'self';
+  let totalFee      = 3000;
+  let pmesChoice    = 'yes';
+  let pmesFileReady = false;
+  let selectedElecId   = null;
+  let selectedElecName = null;
+  const docUploaded = [false,false,false,false,false,false,false,false]; // 0-6 required, 7 optional
+  const REQUIRED_DOCS = 7;
+
+  /* ── NAVIGATION ────────────────────────────────── */
+  function updateProgress(step){
+    document.getElementById('progressBar').style.width = ((step+1)/6*100)+'%';
+  }
+
+  window.goToStep = function(step){
+    curStep = step;
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel'+step);
+    if(panel) panel.classList.add('active');
+    document.querySelectorAll('.nc-step').forEach((el,i) => {
+      el.classList.toggle('active', i === step);
+    });
+    updateProgress(step);
+
+    // refresh dynamic content when entering a step
+    if(step === 3) renderElecStep();
+    if(step === 5) refreshPaymentSummary();
+  };
+
+  window.nextStep = function(current){
+    if(current === 2 && !canProceedPmes()) return;
+    if(current === 3 && !canProceedElec()) return;
+    if(current < 5) goToStep(current+1);
+  };
+
+  window.prevStep = function(current){
+    if(current > 0) goToStep(current-1);
+  };
+
+  /* ── STEP 0 — PROCESSING MODE ──────────────────── */
+  window.selectProcessingMode = function(mode){
+    processingMode = mode;
+    totalFee = mode === 'self' ? 3000 : 7000;
+    window._ncState.processingMode = mode;  // keep global in sync
+    window._ncState.totalFee = totalFee;
+    document.getElementById('selfServiceCard').classList.toggle('selected', mode==='self');
+    document.getElementById('assistedCard').classList.toggle('selected', mode==='assisted');
+
+    // Keep pay button amount in sync regardless of which step user is on
+    const amt = mode === 'assisted' ? '₱7,000.00' : '₱3,000.00';
+    const payBtnAmt = document.getElementById('payBtnAmt');
+    if (payBtnAmt) payBtnAmt.textContent = amt;
+  };
+
+  /* ── STEP 2 — PMES ─────────────────────────────── */
+  window.selectPmes = function(choice){
+    pmesChoice = choice;
+    document.getElementById('pmesYesCard').classList.toggle('selected', choice==='yes');
+    document.getElementById('pmesNoCard').classList.toggle('selected', choice==='no');
+    document.getElementById('pmesWarning').classList.toggle('hidden', choice==='yes');
+    document.getElementById('pmesUploadArea').classList.toggle('hidden', choice==='no');
+    updatePmesNextBtn();
+  };
+
+  function canProceedPmes(){
+    if(pmesChoice === 'no'){
+      alert('You must attend PMES before you can proceed. Please check the seminar schedule.');
+      return false;
+    }
+    if(!pmesFileReady){
+      alert('Please upload your Certificate of Attendance to continue.');
+      return false;
+    }
+    return true;
+  }
+
+  function updatePmesNextBtn(){
+    const btn = document.getElementById('pmesNextBtn');
+    const ok  = pmesChoice === 'yes' && pmesFileReady;
+    btn.style.opacity  = ok ? '1' : '.5';
+    btn.style.cursor   = ok ? 'pointer' : 'not-allowed';
+  }
+
+  window.onPmesFileChange = function(input){
+    pmesFileReady = input.files && input.files.length > 0;
+    const nameEl = document.getElementById('pmesFileName');
+    if(pmesFileReady){
+      nameEl.style.display = 'block';
+      nameEl.textContent   = '✅ ' + input.files[0].name;
+      document.getElementById('pmesDropzone').style.borderColor = '#86efac';
+    } else {
+      nameEl.style.display = 'none';
+      document.getElementById('pmesDropzone').style.borderColor = '#cbd5e1';
+    }
+    updatePmesNextBtn();
+  };
+
+  // init Step 2 state
+  selectPmes('yes');
+
+  /* ── STEP 3 — ELECTRICIAN ───────────────────────── */
+  function renderElecStep(){
+    const isAssisted = processingMode === 'assisted';
+    document.getElementById('assistedElecNotice').classList.toggle('hidden', !isAssisted);
+    document.getElementById('electricianListArea').classList.toggle('hidden', isAssisted);
+
+    if(isAssisted){
+      // auto-select "NORECO assigned" so next is always enabled
+      selectedElecId   = 'noreco-assigned';
+      selectedElecName = 'NORECO I will assign an electrician';
+    } else {
+      loadElectricians();
+    }
+  }
+
+  function canProceedElec(){
+    if(!selectedElecId){
+      alert('Please select an electrician or choose "I will hire my own" to continue.');
+      return false;
+    }
+    return true;
+  }
+
+  let elecUnsubscribe = null;
+
+  function loadElectricians(){
+    const container = document.getElementById('electricianCards');
+    container.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.85rem;">⏳ Loading…</div>';
+
+    // unsubscribe previous listener if any
+    if(elecUnsubscribe) elecUnsubscribe();
+
+    elecUnsubscribe = onSnapshot(collection(db, 'electricians'), (snap) => {
+      container.innerHTML = '';
+
+      if(snap.empty){
+        container.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.85rem;">No electricians available at the moment.</div>';
+        return;
+      }
+
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'elec-card' + (selectedElecId === docSnap.id ? ' selected' : '');
+        card.id = 'elecCard-' + docSnap.id;
+        card.innerHTML = `
+          <div class="elec-avatar">👷</div>
+          <div class="elec-info">
+            <div class="elec-name">${d.name || 'Electrician'}</div>
+            <div class="elec-area">📍 ${d.area || 'Area not specified'} &nbsp;·&nbsp; 📞 ${d.contact || '—'}</div>
+          </div>
+          <span class="elec-avail ${d.available ? '' : 'busy'}">${d.available ? 'Available' : 'Busy'}</span>
+        `;
+        if(d.available){
+          card.onclick = () => selectElectrician(docSnap.id, d.name);
+        } else {
+          card.style.opacity = '.5';
+          card.style.cursor  = 'not-allowed';
+        }
+        container.appendChild(card);
+      });
+    });
+  }
+
+  window.selectElectrician = function(id, name){
+    selectedElecId   = id;
+    selectedElecName = name;
+
+    // deselect all cards
+    document.querySelectorAll('.elec-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('ownElecCard').classList.remove('selected');
+
+    // highlight chosen
+    const target = id === 'own'
+      ? document.getElementById('ownElecCard')
+      : document.getElementById('elecCard-'+id);
+    if(target) target.classList.add('selected');
+
+    // show notice
+    const notice = document.getElementById('elecSelectedNotice');
+    notice.classList.remove('hidden');
+    document.getElementById('elecSelectedName').textContent =
+      'Selected: ' + name;
+  };
+
+  /* ── STEP 4 — DOCUMENTS ────────────────────────── */
+  window.onDocFileChange = function(index, input){
+    const uploaded = input.files && input.files.length > 0;
+    docUploaded[index] = uploaded;
+
+    const item     = document.getElementById('docItem'+index);
+    const dot      = document.getElementById('docDot'+index);
+    const filename = document.getElementById('docFilename'+index);
+
+    if(uploaded){
+      item.classList.add('uploaded');
+      dot.textContent  = '✅';
+      filename.textContent = input.files[0].name;
+    } else {
+      item.classList.remove('uploaded');
+      dot.textContent  = '⬜';
+      filename.textContent = '';
+    }
+
+    updateDocCount();
+  };
+
+  function updateDocCount(){
+    const count = docUploaded.slice(0,REQUIRED_DOCS).filter(Boolean).length;
+    document.getElementById('docUploadCount').textContent =
+      count + ' of ' + REQUIRED_DOCS + ' required';
+  }
+
+  /* ── STEP 5 — PAYMENT SUMMARY ──────────────────── */
+  function refreshPaymentSummary(){
+    const isAssisted = processingMode === 'assisted';
+
+    document.getElementById('payModeLabel').textContent =
+      isAssisted ? 'Assisted Processing' : 'Self-Service';
+
+    document.getElementById('payRowConnection').classList.toggle('hidden', isAssisted);
+    document.getElementById('payRowCoord').classList.toggle('hidden', !isAssisted);
+    document.getElementById('payRowProcessing').classList.toggle('hidden', !isAssisted);
+
+    const amt = isAssisted ? '₱7,000.00' : '₱3,000.00';
+    document.getElementById('payTotal').textContent   = amt;
+    document.getElementById('payBtnAmt').textContent  = amt;
+
+    // fill summary
+    document.getElementById('sumName').textContent  =
+      document.getElementById('ncName')?.value  || '—';
+    document.getElementById('sumEmail').textContent =
+      document.getElementById('ncEmail')?.value || '—';
+    document.getElementById('sumPhone').textContent =
+      document.getElementById('ncPhone')?.value || '—';
+    document.getElementById('sumMode').textContent  =
+      isAssisted ? 'Assisted Processing' : 'Self-Service';
+    document.getElementById('sumElec').textContent  =
+      selectedElecName || '—';
+  }
+
+  /* ── FORM SUBMIT ───────────────────────────────── */
+  const DOC_FIELDS = [
+    'membershipForm',
+    'electricalPermit',
+    'finalInspectionCert',
+    'electricalPlan',
+    'sdwAffidavit',
+    'electricianLicense',
+    'completionCert',
+    'sdwAffidavit100m'
+  ];
+
+  /* ── RECEIPT STATE ─────────────────────────────── */
+  let ncApplicationId  = null;
+  let ncApplicantEmail = '';
+  let ncReceiptFile    = null;
+
+  // ── PayMongo static links ──────────────────────────
+  const SELF_SERVICE_LINK = 'https://pm.link/org-ony8gBWFPdktHD9DsFEnxKHP/fuY3sN3';  // ₱3,000
+  const ASSISTED_LINK     = 'https://pm.link/org-ony8gBWFPdktHD9DsFEnxKHP/tiMyVRw';  // ₱7,000
+
+  window.handlePaymentClick = function(){
+    const btn = document.getElementById('submitBtn');
+    if (btn.disabled) return;
+
+    // ── Open PayMongo SYNCHRONOUSLY on the click gesture (avoids popup block) ──
+    const _mode = window._ncState ? window._ncState.processingMode : processingMode;
+    const payLink = _mode === 'assisted' ? ASSISTED_LINK : SELF_SERVICE_LINK;
+    window.open(payLink, '_blank');
+
+    btn.disabled         = true;
+    btn.innerHTML        = '💳 Proceeded to PayMongo';
+    btn.style.background = '#16a34a';
+
+    // Highlight receipt upload section
+    const section = document.getElementById('receiptUploadSection');
+    section.style.borderColor = '#7c3aed';
+    section.style.background  = '#ede9fe';
+    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showNcToast('✅ PayMongo opened! Upload your receipt below after payment.', 'success');
+
+    // ── Background: save application to Firebase + upload docs ──
+    (async () => {
+      try {
+        const uid = JSON.parse(localStorage.getItem('ecmsUser') || 'null')?.uid || 'anonymous';
+        const docs = {};
+
+        for (let i = 0; i < 8; i++) {
+          const input = document.getElementById('docFile' + i);
+          if (input && input.files && input.files[0]) {
+            docs[DOC_FIELDS[i]] = await uploadFile(input.files[0], `new-connections/${uid}`);
+          }
+        }
+
+        const pmesInput = document.getElementById('pmesFile');
+        if (pmesInput && pmesInput.files && pmesInput.files[0]) {
+          docs['pmesCertificate'] = await uploadFile(pmesInput.files[0], `new-connections/${uid}`);
+        }
+
+        const docRef = await addDoc(collection(db, 'new_connections'), {
+          applicantName:  document.getElementById('ncName')?.value  || '',
+          email:          document.getElementById('ncEmail')?.value || '',
+          contactNo:      document.getElementById('ncPhone')?.value || '',
+          processingMode,
+          totalFee,
+          electricianId:   selectedElecId   || '',
+          electricianName: selectedElecName || '',
+          docs,
+          status: 'pending_payment',
+          uid,
+          createdAt: serverTimestamp()
+        });
+
+        ncApplicationId  = docRef.id;
+        ncApplicantEmail = document.getElementById('ncEmail')?.value || '';
+
+      } catch(err) {
+        console.warn('Background save failed (PayMongo already opened):', err.message);
+      }
+    })();
+  };
+
+  /* ── RECEIPT UPLOAD LOGIC ───────────────────────── */
+  window.ncHandleDragOver = function(e){
+    e.preventDefault();
+    document.getElementById('ncReceiptDropZone').classList.add('dragover');
+  };
+  window.ncHandleDragLeave = function(){
+    document.getElementById('ncReceiptDropZone').classList.remove('dragover');
+  };
+  window.ncHandleDrop = function(e){
+    e.preventDefault();
+    document.getElementById('ncReceiptDropZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) ncApplyFile(file);
+  };
+  window.ncHandleFileSelect = function(e){
+    const file = e.target.files[0];
+    if (file) ncApplyFile(file);
+  };
+
+  function ncApplyFile(file){
+    if (file.size > 5 * 1024 * 1024){
+      showNcToast('⚠️ File too large. Maximum size is 5 MB.', 'error');
+      return;
+    }
+    ncReceiptFile = file;
+    document.getElementById('ncReceiptFileName').textContent = `📄 ${file.name}`;
+    document.getElementById('ncReceiptFileName').style.display = 'block';
+    document.getElementById('ncUploadReceiptBtn').disabled = false;
+
+    if (file.type.startsWith('image/')){
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const preview = document.getElementById('ncReceiptPreview');
+        preview.src           = ev.target.result;
+        preview.style.display = 'block';
+        document.getElementById('ncReceiptDropLabel').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  window.ncSubmitReceipt = async function(){
+    if (!ncReceiptFile){
+      showNcToast('⚠️ Please select a receipt file first.', 'error');
+      return;
+    }
+    if (!ncApplicationId){
+      showNcToast('⚠️ Please submit your application first before uploading the receipt.', 'error');
+      return;
+    }
+
+    const btn      = document.getElementById('ncUploadReceiptBtn');
+    const progress = document.getElementById('ncReceiptProgress');
+    const bar      = document.getElementById('ncReceiptProgressBar');
+    btn.disabled   = true;
+    btn.textContent = '⏳ Uploading…';
+    progress.style.display = 'block';
+
+    let pct = 0;
+    const ticker = setInterval(() => {
+      pct = Math.min(pct + 10, 85);
+      bar.style.width = pct + '%';
+    }, 150);
+
+    try {
+      const folder    = `connection-receipts/${ncApplicationId}`;
+      const publicUrl = await uploadFile(ncReceiptFile, folder);
+
+      // Save receipt reference to Supabase
+      const { error } = await supabase
+        .from('connection_receipts')
+        .upsert({
+          application_id: ncApplicationId,
+          applicant_email: ncApplicantEmail,
+          receipt_url:    publicUrl,
+          processing_mode: processingMode,
+          total_fee:       totalFee,
+          uploaded_at:    new Date().toISOString(),
+        }, { onConflict: 'application_id' });
+
+      if (error) throw error;
+
+      clearInterval(ticker);
+      bar.style.width = '100%';
+
+      document.getElementById('ncReceiptSuccessMsg').style.display = 'block';
+      document.getElementById('ncReceiptViewLink').href = publicUrl;
+      btn.textContent      = '✅ Receipt Uploaded!';
+      btn.style.background = '#16a34a';
+
+      showNcToast('✅ Receipt uploaded! NORECO I will review your payment.', 'success');
+
+    } catch(err){
+      clearInterval(ticker);
+      console.error('Receipt upload error:', err);
+      bar.style.width        = '0%';
+      progress.style.display = 'none';
+      btn.disabled           = false;
+      btn.textContent        = '📤 Upload Payment Receipt';
+      btn.style.background   = '';
+      showNcToast('⚠️ Upload failed: ' + err.message, 'error');
+    }
+  };
+
+  /* ── TOAST HELPER ───────────────────────────────── */
+  function showNcToast(message, type = 'info'){
+    const existing = document.querySelector('.payment-toast-nc');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.className  = `payment-toast-nc ${type}`;
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = 'opacity .4s';
+      el.style.opacity    = '0';
+      setTimeout(() => el.remove(), 400);
+    }, 5000);
+  }
+
+</script>
+
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+
+</body>
+</html>

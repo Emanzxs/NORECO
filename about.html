@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – About Us</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .about-hero {
+      position: relative;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, #1a5276 60%, #0d6efd 100%);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 3rem;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+    }
+    .about-hero-bg {
+      position: absolute; inset: 0;
+      background: url('assets/banner.jpg') center/cover no-repeat;
+      opacity: .15;
+    }
+    .about-hero-content {
+      position: relative; z-index: 2;
+      padding: 2.5rem 4rem; color: #fff;
+    }
+    .about-hero-content h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.2rem; font-weight: 800; margin-bottom: .4rem;
+    }
+    .about-hero-content p { font-size: 1rem; opacity: .8; margin: 0; }
+
+    /* History layout */
+    .history-wrap {
+      position: relative;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 2rem;
+    }
+    .history-wrap-bg {
+      position: absolute; inset: 0;
+      background: url('assets/noreco-logo.jpeg') center center no-repeat;
+      background-size: 55%;
+      opacity: .30;
+      z-index: 0;
+    }
+
+    .history-body {
+      position: relative; z-index: 1;
+      padding: 2.5rem 3rem;
+    }
+    .history-heading {
+      display: flex; align-items: center; gap: .9rem; margin-bottom: 1.35rem;
+    }
+    .history-bar {
+      width: 5px; height: 42px;
+      background: linear-gradient(180deg, #d97706, var(--blue-deep));
+      border-radius: 3px; flex-shrink: 0;
+    }
+    .history-heading h2 {
+      font-family: 'Sora', sans-serif; font-size: 1.85rem;
+      font-weight: 800; color: var(--blue-deep); margin: 0;
+    }
+    .history-text {
+      font-size: .92rem; color: #374151; line-height: 1.95;
+      display: flex; flex-direction: column; gap: .8rem;
+    }
+    .history-text p { margin: 0; }
+    .history-text .hl { font-weight: 700; color: var(--blue-deep); }
+
+    /* Stats */
+    .about-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .about-stat {
+      background: linear-gradient(135deg, var(--blue-deep), #1a3a7a);
+      border-radius: var(--radius);
+      padding: 1.4rem 1rem; text-align: center; color: #fff;
+    }
+    .about-stat .n {
+      font-family: 'Sora', sans-serif; font-size: 1.9rem;
+      font-weight: 800; color: #fbbf24; line-height: 1; margin-bottom: .3rem;
+    }
+    .about-stat .l { font-size: .75rem; opacity: .72; }
+
+    /* Districts */
+    .districts-wrap {
+      background: #fff; border-radius: var(--radius-lg);
+      padding: 1.6rem 2rem; border: 1px solid #e5e7eb;
+      box-shadow: var(--shadow-md); margin-bottom: 2rem;
+    }
+    .districts-wrap h3 {
+      font-family: 'Sora', sans-serif; color: var(--blue-deep);
+      font-size: 1.05rem; margin: 0 0 .9rem;
+    }
+    .district-pills { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .dp {
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 999px; padding: .28rem .8rem;
+      font-size: .81rem; font-weight: 600; color: #1e40af;
+    }
+
+    /* Mission Vision */
+    .mv-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.25rem; margin-bottom: 2.5rem;
+    }
+    .mv-card { border-radius: var(--radius-lg); padding: 1.6rem; }
+    .mv-card.mission {
+      background: linear-gradient(135deg, #fefce8, #fef9c3);
+      border: 1px solid #fde68a;
+    }
+    .mv-card.vision {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #bfdbfe;
+    }
+    .mv-card .mvi { font-size: 1.5rem; margin-bottom: .45rem; }
+    .mv-card h4 { font-family: 'Sora', sans-serif; font-size: .98rem; margin: 0 0 .55rem; }
+    .mv-card.mission h4 { color: #92400e; }
+    .mv-card.vision  h4 { color: #1e3a5f; }
+    .mv-card p { font-size: .85rem; line-height: 1.75; margin: 0; }
+    .mv-card.mission p { color: #78350f; }
+    .mv-card.vision  p { color: #1e40af; }
+
+    @media(max-width: 900px) {
+      .history-body { padding: 1.75rem; }
+      .about-hero-content { padding: 2rem 1.5rem; }
+      .about-hero-content h1 { font-size: 1.7rem; }
+      .about-stats { grid-template-columns: repeat(2, 1fr); }
+      .mv-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+     <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+
+  <!-- Hero Banner -->
+  <div class="about-hero">
+    <div class="about-hero-bg"></div>
+    <div class="about-hero-content">
+      <span class="hero-badge">🏛️ Negros Oriental I Electric Cooperative</span>
+      <h1>About NORECO I</h1>
+      <p>Serving Negros Oriental communities with reliable electricity since 1972.</p>
+    </div>
+  </div>
+
+  <!-- History -->
+  <h2 class="section-title">📜 Our History</h2>
+  <p class="section-sub">How NORECO I grew to power all of Negros Oriental.</p>
+
+  <div class="history-wrap">
+    <div class="history-wrap-bg"></div>
+    <div class="history-body">
+      <div class="history-heading">
+        <div class="history-bar"></div>
+        <h2>History</h2>
+      </div>
+      <div class="history-text">
+        <p>The Negros Oriental I Electric Cooperative, Inc. (NORECO I) was organized by the Provincial Electric Cooperative Team (PECT) and the National Electrification Administration (NEA) during the period from June 5–14, 1972.</p>
+        <p>NORECO I's total land area coverage is 2,425.20 square kilometres comprising eleven districts, namely: Bais City, Mabinay, Manjuyod, Bindoy, Ayungon, Tayasan, Jimalalud, La Libertad, Guihulngan City, Vallehermoso and Canlaon City.</p>
+        <p>NORECO I was incorporated on June 14, 1972 under Certificate of Registration No. 28 issued by the NEA that expired on June 13, 2022. Such Certification was renewed with Certificate of Registration No. 161.</p>
+        <p>On September 6, 1976 line construction started with the NAPOCOR committing to supply the much-needed power.</p>
+        <p>On April 8, 1978, the Municipalities of Bindoy, Manjuyod, Ayungon, Tayasan, Jimalalud and the City of Bais were lighted. The Municipality of Mabinay was lighted on Christmas Eve of 1978 as well as the Municipalities of Vallehermoso and Canlaon City were energized.</p>
+        <p>Geographically speaking, NORECO I's coverage area has mostly mountain ranges. Its terrains are mostly described as rugged. Consumers are widely spread in some areas and are rarely clustered.</p>
+        <p class="hl">As of 31 December 2006, all barangays in the coverage area were energized.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="about-stats">
+    <div class="about-stat"><div class="n">1972</div><div class="l">Year Founded</div></div>
+    <div class="about-stat"><div class="n">2,425</div><div class="l">km² Coverage Area</div></div>
+    <div class="about-stat"><div class="n">11</div><div class="l">Districts Served</div></div>
+    <div class="about-stat"><div class="n">100%</div><div class="l">Barangays Energized</div></div>
+  </div>
+
+  <!-- Districts -->
+  <div class="districts-wrap">
+    <h3>📍 Districts & Coverage Areas</h3>
+    <div class="district-pills">
+      <span class="dp">📍 Bais City</span>
+      <span class="dp">📍 Mabinay</span>
+      <span class="dp">📍 Manjuyod</span>
+      <span class="dp">📍 Bindoy</span>
+      <span class="dp">📍 Ayungon</span>
+      <span class="dp">📍 Tayasan</span>
+      <span class="dp">📍 Jimalalud</span>
+      <span class="dp">📍 La Libertad</span>
+      <span class="dp">📍 Guihulngan City</span>
+      <span class="dp">📍 Vallehermoso</span>
+      <span class="dp">📍 Canlaon City</span>
+    </div>
+  </div>
+
+  <!-- Mission & Vision & Core Values -->
+  <h2 class="section-title">🎯 Our Principles</h2>
+  <p class="section-sub">The foundation that guides NORECO I in serving Negros Oriental.</p>
+
+  <div id="principles-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;margin-bottom:2.5rem;">
+
+    <!-- 1st EC Law -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 4px 18px rgba(0,0,0,.07);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:linear-gradient(135deg,#002060,#1a3a7a);padding:1.5rem 1.25rem 1.1rem;text-align:center;">
+        <div style="font-size:2.2rem;margin-bottom:.4rem;">⚖️</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:#fbbf24;">1st EC Law</div>
+      </div>
+      <div style="padding:1.25rem;flex:1;display:flex;align-items:center;">
+        <p style="font-size:.83rem;color:#374151;line-height:1.75;margin:0;text-align:center;font-style:italic;">
+          "Thou shalt protect and promote the rights and interest of the coop members with your whole heart in absolute honesty, maximum efficiency and total solidarity."
+        </p>
+      </div>
+      <div style="height:5px;background:linear-gradient(90deg,#fbbf24,#d97706);"></div>
+    </div>
+
+    <!-- Our Vision -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 4px 18px rgba(0,0,0,.07);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:linear-gradient(135deg,#002060,#1a3a7a);padding:1.5rem 1.25rem 1.1rem;text-align:center;">
+        <div style="font-size:2.2rem;margin-bottom:.4rem;">👁️</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:#fbbf24;">Our Vision</div>
+      </div>
+      <div style="padding:1.25rem;flex:1;display:flex;align-items:center;">
+        <p style="font-size:.83rem;color:#374151;line-height:1.75;margin:0;text-align:center;font-style:italic;">
+          "To be the most trusted, consumer-owned energy provider, by combining good governance with competitive, transparent, and resilient operations even amid evolving regulatory and privatization challenges."
+        </p>
+      </div>
+      <div style="height:5px;background:linear-gradient(90deg,#3b82f6,#1d4ed8);"></div>
+    </div>
+
+    <!-- Our Mission -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 4px 18px rgba(0,0,0,.07);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:linear-gradient(135deg,#002060,#1a3a7a);padding:1.5rem 1.25rem 1.1rem;text-align:center;">
+        <div style="font-size:2.2rem;margin-bottom:.4rem;">🎯</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:#fbbf24;">Our Mission</div>
+      </div>
+      <div style="padding:1.25rem;flex:1;display:flex;align-items:center;">
+        <p style="font-size:.83rem;color:#374151;line-height:1.75;margin:0;text-align:center;font-style:italic;">
+          "To deliver excellent electric services for the satisfaction of consumers and contribute to the socio-economic progress in the coverage area."
+        </p>
+      </div>
+      <div style="height:5px;background:linear-gradient(90deg,#10b981,#059669);"></div>
+    </div>
+
+    <!-- Core Values -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 4px 18px rgba(0,0,0,.07);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:linear-gradient(135deg,#002060,#1a3a7a);padding:1.5rem 1.25rem 1.1rem;text-align:center;">
+        <div style="font-size:2.2rem;margin-bottom:.4rem;">💎</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:#fbbf24;">Core Values</div>
+      </div>
+      <div style="padding:1.25rem;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.45rem;">
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Commitment</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Generosity</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Team Work</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Integrity</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Honesty</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Discipline</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Hardwork</span>
+        <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.22rem .75rem;font-size:.78rem;font-weight:600;color:#1e40af;">Thrift</span>
+      </div>
+      <div style="height:5px;background:linear-gradient(90deg,#f59e0b,#d97706);"></div>
+    </div>
+
+  </div>
+
+  <style>
+    @media(max-width:900px) {
+      .principles-grid { grid-template-columns: repeat(2,1fr) !important; }
+    }
+    @media(max-width:600px) {
+      .principles-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+</body>
+</html>

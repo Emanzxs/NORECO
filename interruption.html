@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NORECO I – Power Interruption Schedule</title>
+
+  <link rel="stylesheet" href="style.css"/>
+
+  <style>
+
+   body{
+  background:
+    linear-gradient(
+      180deg,
+      #edf4ff 0%,
+      #f8fbff 100%
+    );
+
+  font-family:'DM Sans',sans-serif;
+  color:#1e293b;
+}
+
+/* ───────────────── PAGE WRAP ───────────────── */
+
+.page-wrap{
+  width:min(1300px,92%);
+  margin:auto;
+  padding:1.5rem 0 4rem;
+}
+
+/* ───────────────── HERO ───────────────── */
+
+.hero{
+  position:relative;
+  overflow:hidden;
+
+  border-radius:28px;
+
+  padding:3rem;
+
+  margin-bottom:2rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #001b5e 0%,
+      #123b9a 55%,
+      #2f73ff 100%
+    );
+
+  box-shadow:
+    0 20px 50px rgba(0,32,96,.15);
+}
+
+.hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(255,255,255,.18),
+      transparent 40%
+    );
+}
+
+.hero::after{
+  content:'⚡';
+
+  position:absolute;
+  right:2rem;
+  top:50%;
+
+  transform:translateY(-50%);
+
+  font-size:7rem;
+  opacity:.08;
+}
+
+.hero-title{
+  position:relative;
+  z-index:2;
+
+  font-size:2.4rem;
+  font-weight:800;
+
+  color:#fff;
+
+  margin-bottom:.8rem;
+
+  letter-spacing:-1px;
+}
+
+.hero-sub{
+  position:relative;
+  z-index:2;
+
+  max-width:650px;
+
+  font-size:1rem;
+  line-height:1.8;
+
+  color:rgba(255,255,255,.88);
+}
+
+/* ───────────────── LAYOUT ───────────────── */
+
+.layout{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:2rem;
+  align-items:start;
+}
+
+/* ───────────────── SIDEBAR ───────────────── */
+
+.side-character{
+  position:sticky;
+  top:1.5rem;
+}
+
+.side-character img{
+  width:100%;
+  max-width:240px;
+
+  filter:
+    drop-shadow(0 20px 30px rgba(0,0,0,.15));
+
+  animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%,100%{
+    transform:translateY(0);
+  }
+  50%{
+    transform:translateY(-10px);
+  }
+}
+
+/* ───────────────── TOP CONTROLS ───────────────── */
+
+.top-controls{
+  position:sticky;
+  top:0;
+  z-index:30;
+
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  flex-wrap:wrap;
+
+  margin-bottom:1.5rem;
+
+  padding:1rem;
+
+  backdrop-filter:blur(16px);
+
+  background:rgba(255,255,255,.7);
+
+  border:1px solid rgba(255,255,255,.5);
+
+  border-radius:20px;
+
+  box-shadow:
+    0 8px 24px rgba(15,23,42,.06);
+}
+
+.search-box{
+  position:relative;
+  flex:1;
+  min-width:260px;
+}
+
+.search-box span{
+  position:absolute;
+  left:1rem;
+  top:50%;
+
+  transform:translateY(-50%);
+
+  color:#94a3b8;
+}
+
+.search-box input{
+  width:100%;
+
+  padding:1rem 1rem 1rem 3rem;
+
+  border:none;
+  border-radius:16px;
+
+  background:#fff;
+
+  font-size:.92rem;
+
+  outline:none;
+
+  box-shadow:
+    inset 0 0 0 1px #dbe4f8,
+    0 6px 18px rgba(0,32,96,.05);
+
+  transition:.25s ease;
+}
+
+.search-box input:focus{
+  box-shadow:
+    inset 0 0 0 2px #2563eb,
+    0 0 0 6px rgba(37,99,235,.12);
+}
+
+.refresh-btn{
+  border:none;
+
+  border-radius:16px;
+
+  padding:1rem 1.3rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #002060,
+      #2563eb
+    );
+
+  color:#fff;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.25s ease;
+
+  box-shadow:
+    0 10px 25px rgba(37,99,235,.25);
+}
+
+.refresh-btn:hover{
+  transform:translateY(-2px) scale(1.02);
+}
+
+/* ───────────────── INTERRUPTION CARD ───────────────── */
+
+.interrupt-card{
+  position:relative;
+
+  overflow:hidden;
+
+  background:rgba(255,255,255,.82);
+
+  backdrop-filter:blur(18px);
+
+  border-radius:24px;
+
+  margin-bottom:1.5rem;
+
+  border:1px solid rgba(255,255,255,.65);
+
+  box-shadow:
+    0 10px 30px rgba(15,23,42,.06);
+
+  transition:.28s ease;
+}
+
+.interrupt-card:hover{
+  transform:translateY(-5px);
+
+  box-shadow:
+    0 24px 50px rgba(0,32,96,.12);
+}
+
+/* ───────────────── HEADER ───────────────── */
+
+.interrupt-header{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+
+  padding:1.3rem 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,32,96,.96),
+      rgba(37,99,235,.96)
+    );
+}
+
+.interrupt-header img{
+  width:42px;
+  height:42px;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  padding:3px;
+
+  object-fit:cover;
+}
+
+.interrupt-header span{
+  color:#fff;
+
+  font-size:.88rem;
+  font-weight:800;
+
+  letter-spacing:.05em;
+
+  text-transform:uppercase;
+}
+
+/* ───────────────── TABLE HEAD ───────────────── */
+
+.interrupt-table-head{
+  display:grid;
+
+  grid-template-columns:
+    .9fr .8fr 1.3fr 1.8fr;
+
+  gap:1rem;
+
+  padding:1rem 1.5rem;
+
+  background:#f1f6ff;
+
+  border-bottom:1px solid #e5edf9;
+}
+
+.interrupt-table-head div{
+  font-size:.7rem;
+  font-weight:800;
+
+  letter-spacing:.08em;
+
+  color:#1d4ed8;
+
+  text-transform:uppercase;
+}
+
+/* ───────────────── CONTENT ───────────────── */
+
+.interrupt-content{
+  display:grid;
+
+  grid-template-columns:
+    .9fr .8fr 1.3fr 1.8fr;
+
+  gap:1.5rem;
+
+  padding:1.5rem;
+
+  align-items:start;
+}
+
+.interrupt-content strong{
+  display:block;
+
+  margin-bottom:.4rem;
+
+  color:#002060;
+
+  font-size:1rem;
+  font-weight:800;
+}
+
+.interrupt-content div{
+  font-size:.92rem;
+  line-height:1.8;
+  color:#475569;
+}
+
+/* ───────────────── REASON LIST ───────────────── */
+
+.reason-list{
+  margin:0;
+  padding-left:1.1rem;
+}
+
+.reason-list li{
+  margin-bottom:.7rem;
+  line-height:1.7;
+}
+
+/* ───────────────── FOOTER ───────────────── */
+
+.interrupt-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  flex-wrap:wrap;
+  gap:.5rem;
+
+  padding:1rem 1.5rem;
+
+  background:#f8fbff;
+
+  border-top:1px solid #edf2ff;
+
+  font-size:.8rem;
+
+  color:#64748b;
+}
+
+.interrupt-footer strong{
+  color:#2563eb;
+}
+
+/* ───────────────── EMPTY ───────────────── */
+
+.empty-state{
+  display:none;
+
+  text-align:center;
+
+  padding:5rem 1rem;
+}
+
+.empty-state div{
+  font-size:5rem;
+  margin-bottom:1rem;
+}
+
+.empty-state h3{
+  font-size:1.5rem;
+  margin-bottom:.5rem;
+
+  color:#002060;
+}
+
+.empty-state p{
+  color:#64748b;
+}
+
+/* ───────────────── RESPONSIVE ───────────────── */
+
+@media(max-width:980px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .side-character{
+    display:none;
+  }
+
+}
+
+@media(max-width:780px){
+
+  .hero{
+    padding:2rem 1.5rem;
+  }
+
+  .hero-title{
+    font-size:1.8rem;
+  }
+
+  .interrupt-table-head{
+    display:none;
+  }
+
+  .interrupt-content{
+    grid-template-columns:1fr;
+    gap:1.2rem;
+  }
+
+  .interrupt-content > div{
+    border-bottom:1px solid #edf2ff;
+    padding-bottom:1rem;
+  }
+
+  .interrupt-content > div:last-child{
+    border:none;
+    padding-bottom:0;
+  }
+
+  .top-controls{
+    padding:.8rem;
+  }
+
+}
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+
+  <button class="menu-toggle" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <nav>
+
+    <a href="index.html">🏠 Home</a>
+
+    <a href="about.html">🏛️ About</a>
+
+     <a href="contact.html">📞 Contact</a>
+
+
+    <a href="interruption.html">⚡ Outages</a>
+
+    <a href="report.html">⚠️ Report</a>
+
+    <a href="connection-guide.html">
+      📋 Connection Guide
+    </a>
+
+    <a href="new-connection.html">
+      🔌 Apply Connection
+    </a>
+
+    <a href="bills.html">💡 Bills</a>
+
+    <a href="seminar.html">📅 Seminars</a>
+
+    <a href="faq.html">❓ FAQ</a>
+
+    <a id="dashLink"
+       href="dashboard.html"
+       style="display:none">
+       📊 Dashboard
+    </a>
+
+    <a id="adminLink"
+       href="admin.html"
+       style="display:none">
+       🛡️ Admin
+    </a>
+
+    <a href="login.html"
+class="btn btn-gold"
+       id="loginNavBtn">
+       Login
+    </a>
+
+  </nav>
+
+</header>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+
+  <section class="hero">
+
+    <div class="hero-title">
+      Power Interruption Schedule
+    </div>
+
+    <div class="hero-sub">
+      Stay updated with the latest scheduled maintenance,
+      service interruptions, and power outage announcements
+      across the NORECO I coverage areas.
+    </div>
+
+  </section>
+
+  <div class="layout">
+
+    <!-- LEFT CHARACTER -->
+
+    <div class="side-character">
+
+      <img
+        src="assets/noreco-logo.jpeg"
+        alt="NORECO I Logo"
+      >
+
+    </div>
+
+    <!-- MAIN -->
+
+    <div>
+
+      <!-- SEARCH -->
+
+      <div class="top-controls">
+
+        <div class="search-box">
+
+          <span>🔍</span>
+
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search municipality, barangay, or schedule..."
+          >
+
+        </div>
+
+        <button class="refresh-btn">
+
+          🔄 Refresh
+
+        </button>
+
+      </div>
+
+      <!-- LIST — populated from Firestore -->
+      <div class="announcement-list" id="announcementList">
+        <div style="text-align:center;padding:3rem;color:#94a3b8;font-size:.88rem;">⏳ Loading interruptions…</div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" id="emptyState">
+        <div style="font-size:3rem;">⚡</div>
+        <h3>No interruption found</h3>
+        <p>Try searching another area or keyword.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p>
+</footer>
+
+<script type="module">
+  import { db, collection, onSnapshot, query, orderBy } from './firebase-config.js';
+
+  const listEl      = document.getElementById('announcementList');
+  const emptyState  = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  let allCards = [];
+
+  // ── REALTIME LOAD FROM FIRESTORE ────────────────────────────
+  onSnapshot(query(collection(db,'interruptions'), orderBy('postedAt','desc')), (snap) => {
+    allCards = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderCards(allCards);
+  });
+
+  function renderCards(items){
+    if(!items.length){
+      listEl.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    listEl.innerHTML = items.map(o => {
+      const dateLabel = o.date
+        ? new Date(o.date+'T00:00').toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+        : '—';
+      const postedLabel = o.postedAt?.toDate
+        ? o.postedAt.toDate().toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'})
+        : '—';
+      return `
+        <div class="interrupt-card">
+          <div class="interrupt-header">
+            <img src="assets/noreco-logo.jpeg" alt="logo">
+            <span>Scheduled Power Service Interruption</span>
+          </div>
+          <div class="interrupt-table-head">
+            <div>Date</div>
+            <div>Time</div>
+            <div>Affected Area</div>
+            <div>Reason / Activity</div>
+          </div>
+          <div class="interrupt-content">
+            <div><strong>${o.date ? new Date(o.date+'T00:00').toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}).toUpperCase() : '—'}</strong>${dateLabel.split(',')[0]}</div>
+            <div>${o.time||'—'}</div>
+            <div>${o.area||'—'}</div>
+            <div>${o.reason||'—'}${o.details ? '<br><br><span style="font-size:.8rem;opacity:.8;">'+o.details+'</span>' : ''}</div>
+          </div>
+          <div class="interrupt-footer">
+            <span><strong>Date Posted:</strong> ${postedLabel}</span>
+            <span style="font-size:.75rem;opacity:.7;">Posted by: ${o.postedBy||'NORECO I'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── SEARCH ──────────────────────────────────────────────────
+  searchInput.addEventListener('input', function(){
+    const val = this.value.toLowerCase();
+    const filtered = allCards.filter(o =>
+      (o.area||'').toLowerCase().includes(val) ||
+      (o.reason||'').toLowerCase().includes(val) ||
+      (o.date||'').toLowerCase().includes(val) ||
+      (o.details||'').toLowerCase().includes(val)
+    );
+    renderCards(filtered);
+  });
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

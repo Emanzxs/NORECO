@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – New Connection Guide</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── HERO ─────────────────────────────────────────────────── */
+    .guide-hero {
+      position: relative;
+      background: linear-gradient(135deg, #001540 0%, #002d7a 55%, #0a4fa8 100%);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+    }
+    .guide-hero-bg {
+      position: absolute; inset: 0;
+      background: url('assets/banner.jpg') center/cover no-repeat;
+      opacity: .12;
+    }
+    .guide-hero-content {
+      position: relative; z-index: 2;
+      padding: 2.75rem 4rem; color: #fff;
+      max-width: 680px;
+    }
+    .guide-hero-content h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      margin: .5rem 0 .6rem; line-height: 1.2;
+    }
+    .guide-hero-content p { font-size: .92rem; opacity: .8; margin: 0 0 1.35rem; line-height: 1.7; }
+    .guide-hero-btns { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .btn-apply-now {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: #fbbf24; color: #001540;
+      font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 800;
+      padding: .7rem 1.6rem; border-radius: 8px;
+      text-decoration: none; transition: .2s;
+    }
+    .btn-apply-now:hover { background: #f59e0b; transform: translateY(-1px); }
+    .btn-ghost-white {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: transparent; color: #fff;
+      font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+      padding: .7rem 1.6rem; border-radius: 8px;
+      border: 2px solid rgba(255,255,255,.45);
+      text-decoration: none; transition: .2s;
+    }
+    .btn-ghost-white:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+    .guide-hero-badge { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fbbf24; margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem; }
+    .guide-hero-badge::before { content: ''; display: inline-block; width: 22px; height: 2px; background: #fbbf24; border-radius: 1px; }
+
+    /* ── STEPS GUIDE ──────────────────────────────────────────── */
+    .guide-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .guide-step-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      transition: .15s;
+    }
+    .guide-step-card:hover { border-color: #93c5fd; transform: translateY(-2px); }
+    .guide-step-card::after {
+      content: '→';
+      position: absolute;
+      right: -14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: .9rem; color: #cbd5e1;
+      font-weight: 700;
+    }
+    .guide-step-card:last-child::after { display: none; }
+    .gs-num {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #002060, #1a3a7a);
+      color: #fbbf24;
+      border-radius: 50%;
+      font-family: 'Sora', sans-serif;
+      font-size: .85rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto .6rem;
+    }
+    .gs-icon { font-size: 1.5rem; margin-bottom: .4rem; display: block; }
+    .gs-title { font-size: .8rem; font-weight: 700; color: #1e293b; line-height: 1.3; }
+
+    /* ── REQUIREMENTS SECTION ─────────────────────────────────── */
+    .req-section-title {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .req-section-title .rst-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #002060, #1a3a7a);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .req-section-title h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.25rem; font-weight: 800;
+      color: #002060; margin: 0;
+    }
+    .req-section-title p { font-size: .8rem; color: #64748b; margin: .15rem 0 0; }
+
+    /* Requirement item */
+    .req-item {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: .85rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      transition: .15s;
+    }
+    .req-item:hover { border-color: #93c5fd; }
+    .req-item-top {
+      display: flex; align-items: flex-start;
+      gap: .75rem; margin-bottom: .5rem;
+    }
+    .req-check {
+      width: 24px; height: 24px;
+      background: linear-gradient(135deg, #002060, #1a3a7a);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; color: #fbbf24; font-weight: 800;
+      flex-shrink: 0; margin-top: .1rem;
+    }
+    .req-title {
+      font-size: .92rem; font-weight: 700;
+      color: #1e293b; line-height: 1.3; flex: 1;
+    }
+    .req-badge-sm {
+      font-size: .62rem; font-weight: 700;
+      padding: .18rem .55rem; border-radius: 999px;
+      flex-shrink: 0; margin-left: .35rem;
+    }
+    .req-badge-sm.req { background: #ffe4e6; color: #9f1239; }
+    .req-badge-sm.opt { background: #f1f5f9; color: #64748b; }
+    .req-source {
+      font-size: .73rem; color: #64748b;
+      margin-left: 2.25rem; margin-bottom: .45rem;
+      font-style: italic;
+    }
+    .req-desc {
+      font-size: .78rem; color: #64748b;
+      margin-left: 2.25rem; line-height: 1.6;
+      margin-bottom: .6rem;
+    }
+    .req-downloads {
+      margin-left: 2.25rem;
+      display: flex; flex-wrap: wrap; gap: .4rem;
+    }
+    .dl-pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: #002060; color: #fff;
+      font-size: .7rem; font-weight: 700;
+      padding: .28rem .75rem; border-radius: 999px;
+      text-decoration: none; transition: .15s;
+    }
+    .dl-pill:hover { background: #1a3a7a; }
+    .dl-pill.secondary {
+      background: transparent; color: #002060;
+      border: 1.5px solid #002060;
+    }
+    .dl-pill.secondary:hover { background: #eff6ff; }
+
+    /* ── PMES INFO ────────────────────────────────────────────── */
+    .pmes-card {
+      background: linear-gradient(135deg, #001540, #002d7a);
+      border-radius: 14px;
+      padding: 1.75rem 2rem;
+      color: #fff;
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .pmes-card h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem; font-weight: 700;
+      color: #fbbf24; margin: 0 0 .6rem;
+    }
+    .pmes-info-row {
+      display: flex; gap: .55rem;
+      align-items: flex-start;
+      margin-bottom: .5rem;
+      font-size: .8rem; opacity: .85;
+    }
+    .pmes-info-row strong { color: #fbbf24; opacity: 1; }
+    .pmes-badge-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+    .pmes-badge {
+      background: rgba(255,255,255,.12);
+      border-radius: 999px;
+      padding: .28rem .75rem;
+      font-size: .72rem; font-weight: 600;
+      color: #fff;
+    }
+
+    /* ── FEES TABLE ───────────────────────────────────────────── */
+    .fees-section {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      margin-bottom: 2rem;
+    }
+    .fees-section-header {
+      background: linear-gradient(135deg, #002060, #1a3a7a);
+      padding: 1rem 1.5rem;
+      display: flex; align-items: center; gap: .6rem; color: #fff;
+    }
+    .fees-section-header h3 { font-family: 'Sora', sans-serif; font-size: .95rem; font-weight: 700; margin: 0; }
+    .fees-table { width: 100%; border-collapse: collapse; }
+    .fees-table th {
+      background: #f8fafc;
+      font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      color: #64748b; padding: .65rem 1.25rem;
+      text-align: left; border-bottom: 1px solid #e5e7eb;
+    }
+    .fees-table td {
+      padding: .7rem 1.25rem;
+      font-size: .85rem; color: #374151;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .fees-table tr:last-child td { border-bottom: none; }
+    .fees-table .amount { font-weight: 700; color: #002060; text-align: right; }
+    .fees-total-row td { background: #eff6ff; font-weight: 800; font-size: .92rem; color: #002060; border-top: 2px solid #bfdbfe; }
+    .fees-total-row .amount { color: #d97706; font-size: 1rem; }
+
+    /* ── BOTTOM CTA ───────────────────────────────────────────── */
+    .guide-cta {
+      background: linear-gradient(135deg, #001540, #002060);
+      border-radius: 16px;
+      padding: 2.5rem;
+      text-align: center;
+      color: #fff;
+      margin-top: 2rem;
+    }
+    .guide-cta h2 { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; margin: 0 0 .5rem; }
+    .guide-cta p { opacity: .75; font-size: .9rem; margin: 0 0 1.5rem; }
+    .guide-cta-btns { display: flex; gap: .85rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── NOTICE BOX ───────────────────────────────────────────── */
+    .notice-box {
+      background: #fff7ed;
+      border: 1.5px solid #fed7aa;
+      border-radius: 10px;
+      padding: .9rem 1.1rem;
+      font-size: .81rem; color: #9a3412;
+      display: flex; gap: .55rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    @media(max-width: 900px) {
+      .guide-steps-grid { grid-template-columns: repeat(3, 1fr); }
+      .guide-step-card::after { display: none; }
+      .pmes-card { grid-template-columns: 1fr; }
+      .guide-hero-content { padding: 2rem 1.75rem; }
+      .guide-hero-content h1 { font-size: 1.6rem; }
+    }
+    @media(max-width: 600px) {
+      .guide-steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .guide-hero-content h1 { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+    <a href="connection-guide.html">📋 Connection Guide</a>
+    <a href="new-connection.html">🔌 Apply Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <div class="guide-hero">
+    <div class="guide-hero-bg"></div>
+    <div class="guide-hero-content">
+      <div class="guide-hero-badge">Application Guide</div>
+      <h1>New Electrical Connection — Requirements & Process</h1>
+      <p>Before applying, read this guide carefully. Download the forms you need, prepare your documents, and attend the PMES seminar. Once ready, click <strong>Apply Now</strong>.</p>
+      <div class="guide-hero-btns">
+        <a href="new-connection.html" class="btn-apply-now">🔌 Apply Now →</a>
+        <a href="seminar.html" class="btn-ghost-white">📅 Register for PMES</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCESS STEPS — 5 cards -->
+  <h2 class="section-title">📋 Application Process</h2>
+  <p class="section-sub">5 steps to get your electrical connection — complete all before or during application.</p>
+
+  <div class="guide-steps-grid" style="margin-bottom:2.5rem;">
+    <div class="guide-step-card">
+      <div class="gs-num">1</div>
+      <span class="gs-icon">👤</span>
+      <div class="gs-title">Applicant Info</div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:.4rem;line-height:1.5;">Fill in your personal &amp; contact details</div>
+    </div>
+    <div class="guide-step-card">
+      <div class="gs-num">2</div>
+      <span class="gs-icon">🎓</span>
+      <div class="gs-title">Attend PMES</div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:.4rem;line-height:1.5;">Free seminar — get your Certificate of Attendance</div>
+    </div>
+    <div class="guide-step-card">
+      <div class="gs-num">3</div>
+      <span class="gs-icon">📄</span>
+      <div class="gs-title">Prepare Documents</div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:.4rem;line-height:1.5;">Download, fill &amp; upload all required forms</div>
+    </div>
+    <div class="guide-step-card">
+      <div class="gs-num">4</div>
+      <span class="gs-icon">👷</span>
+      <div class="gs-title">Choose Electrician</div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:.4rem;line-height:1.5;">Pick a NORECO I authorized electrician or hire your own</div>
+    </div>
+    <div class="guide-step-card">
+      <div class="gs-num">5</div>
+      <span class="gs-icon">💳</span>
+      <div class="gs-title">Pay &amp; Submit</div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:.4rem;line-height:1.5;">Pay applicable fees online &amp; submit application</div>
+    </div>
+  </div>
+
+  <!-- STEP 1 + 2 INFO CARD -->
+  <div class="pmes-card" style="margin-bottom:2rem;">
+    <div>
+      <h3>👤 STEP 1 — Applicant Information</h3>
+      <div class="pmes-info-row" style="display:block;">Provide your full name, email address, and phone number. Make sure all details are accurate as they will be used for your application record.</div>
+      <div class="pmes-badge-row">
+        <span class="pmes-badge">📝 Full Name</span>
+        <span class="pmes-badge">📧 Email Address</span>
+        <span class="pmes-badge">📱 Phone Number</span>
+      </div>
+    </div>
+    <div>
+      <h3>🎓 STEP 2 — Pre-Membership Education Seminar (PMES)</h3>
+      <div class="pmes-info-row" style="display:block;">Attendance is <strong>required</strong> before applying. The seminar is <strong>free</strong> and a Certificate of Attendance will be issued upon completion.</div>
+      <div class="pmes-badge-row">
+        <span class="pmes-badge">✅ Free to Attend</span>
+        <span class="pmes-badge">📜 Certificate Issued</span>
+      </div>
+      <div style="margin-top:1rem;">
+        <a href="seminar.html" class="btn-ghost-white" style="font-size:.82rem;padding:.55rem 1.25rem;">📅 View Seminar Schedule →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — DOCUMENTS -->
+  <div class="req-section-title">
+    <div class="rst-icon">📄</div>
+    <div>
+      <h2>STEP 3 — Prepare &amp; Upload Required Documents</h2>
+      <p>Download, fill out, and sign each applicable form. You will upload these during the online application.</p>
+    </div>
+  </div>
+
+  <div class="notice-box">
+    <span>💡</span>
+    <span>Upload all required documents through the <strong>Apply Connection</strong> portal. Make sure each file is clear and readable before submitting. Physical copies must also be brought to the <strong>NORECO I Main Office, Tinaogan, Bindoy, Negros Oriental</strong> on the day of your scheduled inspection.</span>
+  </div>
+
+  <!-- 1. Membership Form -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Membership Form / Contract for Electric Service</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant — can be requested at NORECO I</div>
+    <div class="req-desc">
+      <strong>Membership Form</strong> — for Residential consumers<br>
+      <strong>Contract for Electric Service</strong> — for Commercial, Industrial &amp; Public Buildings
+    </div>
+    <div class="req-downloads">
+      <a href="assets/forms/membershipform.pdf" download class="dl-pill">⬇ Membership Form</a>
+      <a href="assets/forms/Contract-for-Electric-Service.pdf" download class="dl-pill secondary">⬇ Contract for Electric Service</a>
+    </div>
+  </div>
+
+  <!-- 2. Electrical Permit -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Electrical Permit (2 copies)</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant</div>
+    <div class="req-desc">Acquire from the Office of the Building Officials at your respective Local Government Unit.</div>
+  </div>
+
+  <!-- 3. Certificate of Final Inspection -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Certificate of Final Electrical Inspection (2 copies)</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant</div>
+    <div class="req-desc">Acquire from the Office of the Building Officials at your respective Local Government Unit.</div>
+  </div>
+
+  <!-- 4. Electrical Plan -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Electrical Plan signed &amp; sealed by a Professional Electrical Engineer (PEE) — 2 copies</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant</div>
+    <div class="req-desc">Acquire from your electrician, architect, or electrical engineer.</div>
+  </div>
+
+  <!-- 5. Affidavit of Consent SDW -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Service Drop Wire Affidavit of Consent</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant — template available at NORECO I</div>
+    <div class="req-desc">Must be executed by the lot owner, or by a government official if the lot is government-owned. Download the applicable form:</div>
+    <div class="req-downloads">
+      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-PERSONALLY-OWNED.pdf" download class="dl-pill">⬇ Personally Owned</a>
+      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-GOVERNMENT-MAYOR.pdf" download class="dl-pill secondary">⬇ Govt Mayor</a>
+      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE-GOVERNMENT-CAPT.pdf" download class="dl-pill secondary">⬇ Govt Capt</a>
+      <a href="assets/forms/AFFIDAVIT-OF-CONSENT-SD-WIRE.pdf" download class="dl-pill secondary">⬇ SDW Standard</a>
+    </div>
+  </div>
+
+  <!-- 6. SDW >100m -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Service Drop Wire Affidavit — over 100 meters</div>
+      <span class="req-badge-sm opt">If Applicable</span>
+    </div>
+    <div class="req-source">c/o Applicant — template available at NORECO I</div>
+    <div class="req-desc">Required only if the service drop wire for your connection exceeds 100 meters.</div>
+    <div class="req-downloads">
+      <a href="assets/forms/AFFIDAVIT-SDW-100.pdf" download class="dl-pill">⬇ Affidavit-SDW 100</a>
+    </div>
+  </div>
+
+  <!-- 7. Electrician License -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Electrician's PRC License / Authorization</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant</div>
+    <div class="req-desc">Photocopy of the license or authorization of the electrician who performed the housewiring installation.</div>
+  </div>
+
+  <!-- 8. Certificate of Completion -->
+  <div class="req-item">
+    <div class="req-item-top">
+      <div class="req-check">✓</div>
+      <div class="req-title">Certificate of Completion</div>
+      <span class="req-badge-sm req">Required</span>
+    </div>
+    <div class="req-source">c/o Applicant</div>
+    <div class="req-desc">Issued by the authorized electrician who performed the housewiring installation.</div>
+    <div class="req-downloads">
+      <a href="assets/forms/CERTIFICATE-OF-COMPLETION.pdf" download class="dl-pill">⬇ Certificate of Completion</a>
+    </div>
+  </div>
+
+  <!-- STEP 4 — ELECTRICIAN -->
+  <div class="req-section-title" style="margin-top:2.5rem;">
+    <div class="rst-icon">👷</div>
+    <div>
+      <h2>STEP 4 — Hire an Electrician</h2>
+      <p>Browse and select an available NORECO I authorized electrician directly in the application system, or hire your own.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2.5rem;">
+    <div style="background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;padding:1.4rem 1.5rem;">
+      <div style="font-size:1.5rem;margin-bottom:.5rem;">🏢</div>
+      <div style="font-weight:700;color:#002060;font-size:.92rem;margin-bottom:.35rem;">NORECO I Authorized Electrician</div>
+      <div style="font-size:.78rem;color:#64748b;line-height:1.6;">Browse available electricians directly in the application system. Select one and NORECO I will coordinate the schedule on your behalf.</div>
+      <div style="margin-top:.85rem;">
+        <a href="new-connection.html" class="dl-pill" style="border-radius:8px;padding:.45rem 1rem;">🔌 Choose in App →</a>
+      </div>
+    </div>
+    <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.4rem 1.5rem;">
+      <div style="font-size:1.5rem;margin-bottom:.5rem;">🔧</div>
+      <div style="font-weight:700;color:#002060;font-size:.92rem;margin-bottom:.35rem;">Hire Your Own Electrician</div>
+      <div style="font-size:.78rem;color:#64748b;line-height:1.6;">You may also hire your own electrician. Their authorization or license will be required as part of your documents.</div>
+    </div>
+  </div>
+
+  <!-- STEP 5 — FEES -->
+  <div class="req-section-title">
+    <div class="rst-icon">💳</div>
+    <div>
+      <h2>STEP 5 — Applicable Fees</h2>
+      <p>Fees are paid online through the application portal via GCash, Maya, or Credit/Debit Card.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2.5rem;">
+    <div class="fees-section">
+      <div class="fees-section-header">
+        <span>🛠️</span>
+        <h3>Self-Service Processing</h3>
+      </div>
+      <table class="fees-table">
+        <thead><tr><th>Fee Item</th><th class="amount">Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Membership</td><td class="amount">₱500</td></tr>
+          <tr><td>Inspection</td><td class="amount">₱300</td></tr>
+          <tr><td>Meter</td><td class="amount">₱1,200</td></tr>
+          <tr><td>Connection</td><td class="amount">₱1,000</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="fees-total-row"><td><strong>Total</strong></td><td class="amount">₱3,000</td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="fees-section">
+      <div class="fees-section-header">
+        <span>🏢</span>
+        <h3>Assisted Processing</h3>
+      </div>
+      <table class="fees-table">
+        <thead><tr><th>Fee Item</th><th class="amount">Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Membership</td><td class="amount">₱500</td></tr>
+          <tr><td>Inspection</td><td class="amount">₱300</td></tr>
+          <tr><td>Meter</td><td class="amount">₱1,200</td></tr>
+          <tr><td>Coordination</td><td class="amount">₱2,000</td></tr>
+          <tr><td>Processing</td><td class="amount">₱1,500</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="fees-total-row"><td><strong>Total</strong></td><td class="amount">₱7,000</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOTTOM CTA -->
+  <div class="guide-cta">
+    <div style="font-size:2.5rem;margin-bottom:.6rem;">🔌</div>
+    <h2>Ready to Apply?</h2>
+    <p>Make sure you have attended PMES, prepared all required documents, and have an electrician ready before starting.</p>
+    <div class="guide-cta-btns">
+      <a href="new-connection.html" class="btn-apply-now" style="font-size:.95rem;padding:.75rem 2rem;">🔌 Start Application Now</a>
+      <a href="seminar.html" class="btn-ghost-white" style="font-size:.95rem;padding:.75rem 2rem;">📅 Register for PMES</a>
+    </div>
+    <div style="margin-top:1.1rem;font-size:.75rem;opacity:.5;">Need help? Contact NORECO I at (035) 402-5149 or noreco1@yahoo.com</div>
+  </div>
+
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+</body>
+</html>

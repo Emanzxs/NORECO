@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – FAQ & Troubleshooting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a> <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <h2 class="section-title">❓ FAQ & Troubleshooting Guide</h2>
+  <p class="section-sub">Find answers to common electrical problems. Try these steps before submitting a service request.</p>
+
+  <!-- Search -->
+  <div class="form-group" style="max-width:480px;margin-bottom:2rem;">
+    <input type="text" id="faqSearch" placeholder="🔍 Search questions…" oninput="filterFAQ()">
+  </div>
+
+  <!-- Categories -->
+  <div class="action-strip" style="margin-bottom:1.75rem;">
+    <button class="action-btn faq-cat-btn active" onclick="filterCat('all',this)">
+      <span class="ab-icon">📋</span>All Topics
+    </button>
+    <button class="action-btn faq-cat-btn" onclick="filterCat('billing',this)">
+      <span class="ab-icon">💡</span>Billing
+    </button>
+    <button class="action-btn faq-cat-btn" onclick="filterCat('outage',this)">
+      <span class="ab-icon">🔌</span>Power Outage
+    </button>
+    <button class="action-btn faq-cat-btn" onclick="filterCat('permit',this)">
+      <span class="ab-icon">🏗️</span>Permits
+    </button>
+    <button class="action-btn faq-cat-btn" onclick="filterCat('meter',this)">
+      <span class="ab-icon">📟</span>Meter
+    </button>
+  </div>
+
+  <div class="faq-list" id="faqList"></div>
+
+  <!-- Still need help? -->
+  <div class="about-strip" style="margin-top:2.5rem;">
+    <span class="icon-big">🙋</span>
+    <div>
+      <h2>Still need help?</h2>
+      <p>If you couldn't find the answer here, submit a service request and our team will assist you.</p>
+      <a href="report.html" class="btn-primary" style="margin-top:1rem;display:inline-block;">Report a Problem</a>
+    </div>
+  </div>
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script>
+const faqs = [
+  { cat:'outage', q:'What should I do during a power outage?', a:'First, check if your circuit breaker has tripped — reset it if needed. Check if your neighbors also have no power (if yes, it\'s a system-wide outage). Unplug sensitive appliances to prevent surge damage when power returns. If the outage persists after 2 hours, submit a report through our Report a Problem page.' },
+  { cat:'outage', q:'Why do my lights flicker?', a:'Flickering lights are usually caused by loose wiring connections, a failing bulb, or voltage fluctuations. Try replacing the bulb first. If flickering continues across multiple fixtures or throughout the house, it may indicate a loose main connection — report it immediately as it can be a fire hazard.' },
+  { cat:'outage', q:'Why is my power intermittent (on and off)?', a:'Intermittent power is commonly caused by a loose service drop connection, a failing meter socket, or issues with the distribution transformer in your area. Avoid using heavy appliances during this period. Submit a High urgency report so a technician can inspect your connection.' },
+  { cat:'billing', q:'Why is my bill higher than usual?', a:'A sudden increase in your bill may be due to: added appliances or longer appliance usage, a malfunctioning appliance drawing extra power, a leaking electric water heater, or a possible meter issue. Review your appliance usage for the month. If you suspect a meter error, you may request a meter test at the NORECO I office.' },
+  { cat:'billing', q:'How is my electricity bill computed?', a:'Your bill is based on kWh consumption (units used × rate per kWh) plus fixed charges such as distribution charge, transmission charge, system loss, taxes, and subsidies as mandated by ERC. The rate per kWh varies monthly based on generation costs. You can see a breakdown on your printed bill or at the office.' },
+  { cat:'billing', q:'What payment methods are accepted?', a:'You can pay through GCash, Maya (PayMaya), BPI Online, UnionBank Online, or over the counter at the NORECO I office or authorized payment centers. Online payments through the ElectService portal are also accepted. Always keep your reference number as proof of payment.' },
+  { cat:'billing', q:'What happens if I miss my due date?', a:'A surcharge (typically 2% of the unpaid amount) is added after the due date. If the bill remains unpaid after the disconnection notice period (usually 30 days), your service may be disconnected. You can still pay at the office to request reconnection, though a reconnection fee will apply.' },
+  { cat:'permit', q:'What documents are needed for a new electrical connection?', a:'You will need: (1) Valid Government-issued ID, (2) Proof of property ownership or lease agreement, (3) Site development plan or electrical plan prepared by a licensed electrical engineer, (4) Barangay clearance. All documents can be uploaded through the Building Permit Application page.' },
+  { cat:'permit', q:'How long does permit approval take?', a:'Standard processing takes 3–5 working days after complete document submission. Complex or commercial applications may take 7–10 days. You will receive an email notification once your permit is approved, rejected, or if additional documents are needed. Track your application status on the dashboard.' },
+  { cat:'permit', q:'What happens after my permit is approved?', a:'Once approved, staff will schedule your electricity installation. A licensed NORECO I technician will be assigned to your property. You will be required to attend a safety seminar before installation day. Installation typically takes 1–3 days depending on the complexity of the connection.' },
+  { cat:'meter', q:'How do I read my electric meter?', a:'For a digital meter, read the numbers from left to right ignoring the last red digit. Your monthly consumption is the current reading minus last month\'s reading. For an analog meter, read the dials from left to right — if the pointer is between two numbers, record the lower number.' },
+  { cat:'meter', q:'What should I do if I suspect my meter is faulty?', a:'Do not attempt to tamper with or open the meter yourself — this is illegal. Instead, write down your current meter reading and take a photo. Submit a Meter Issue report through the Report a Problem page or visit the NORECO I office to request a formal meter test. A technician will inspect and replace the meter if defective.' },
+  { cat:'meter', q:'What is meter tampering and what are the penalties?', a:'Meter tampering means illegally modifying the meter to reduce consumption readings. Under RA 7832 (Anti-Electricity Pilferage Act), this is punishable by imprisonment and fines. NORECO I conducts regular inspections. Report any suspected tampering in your area through our service request system.' },
+];
+
+let currentCat = 'all';
+
+function renderFAQ(items) {
+  const list = document.getElementById('faqList');
+  if (!items.length) {
+    list.innerHTML = '<p style="color:var(--gray-500);text-align:center;padding:2rem;">No results found. Try a different search term.</p>';
+    return;
+  }
+  list.innerHTML = items.map((f, i) => `
+    <div class="faq-item" id="faq${i}">
+      <div class="faq-q" onclick="toggleFAQ('faq${i}')">
+        <span>${f.q}</span>
+        <span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-a">${f.a}</div>
+    </div>
+  `).join('');
+}
+
+function toggleFAQ(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterFAQ() { applyFilters(); }
+
+function applyFilters() {
+  const q = document.getElementById('faqSearch').value.toLowerCase();
+  let items = faqs;
+  if (currentCat !== 'all') items = items.filter(f => f.cat === currentCat);
+  if (q) items = items.filter(f => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
+  renderFAQ(items);
+}
+
+renderFAQ(faqs);
+</script>
+</body>
+</html>

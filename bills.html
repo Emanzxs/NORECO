@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Monthly Bills</title>
+  <script>
+    window.addEventListener('error', (event) => {
+      console.error("Critical Execution Error:", event.error);
+      document.body.innerHTML = `
+        <div style="padding: 20px; color: red; font-family: monospace;">
+          <h3>Application Error</h3>
+          <p>${event.message}</p>
+        </div>`;
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error("Unhandled Promise Rejection (Likely Firestore):", event.reason);
+    });
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <style>
+    .form-group input:focus { outline: 2px solid var(--blue, #2563eb); border-color: transparent; }
+    .form-group input.valid   { border: 2px solid #16a34a; background: #f0fdf4; }
+    .form-group input.invalid { border: 2px solid #dc2626; background: #fef2f2; }
+    .validation-msg { font-size: 0.75rem; color: #dc2626; margin-top: 4px; display: none; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .skeleton { background:#e2e8f0; border-radius:4px; animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
+    .skeleton-text  { width:100%; height:16px; margin:4px 0; }
+    .skeleton-badge { width:60px; height:24px; border-radius:999px; }
+
+    .consumption-panel {
+      background:#fff; border-radius:12px; padding:1.5rem; margin-bottom:2rem;
+      box-shadow:0 4px 6px -1px rgba(0,0,0,.05); border:1px solid #e5e7eb;
+    }
+    .chart-container {
+      display:flex; align-items:flex-end; gap:1rem; height:120px;
+      margin-top:1rem; border-bottom:2px solid #e5e7eb; padding-bottom:5px;
+    }
+    .chart-bar-group { display:flex; flex-direction:column; align-items:center; flex:1; }
+    .chart-bar {
+      width:100%; max-width:40px; background:var(--blue,#3b82f6);
+      border-radius:4px 4px 0 0; transition:height .5s ease;
+    }
+    .chart-bar.current { background:var(--gold,#d97706); }
+    .chart-label { font-size:.75rem; color:#6b7280; margin-top:5px; font-weight:bold; }
+
+    .soa-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:600; display:flex; align-items:center; justify-content:center; padding:1rem; }
+    .soa-overlay.hidden { display:none; }
+    .soa-box { background:#fff; border-radius:12px; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    #soaContent { font-family:'Courier New',Courier,monospace; font-size:11px; padding:1.5rem; color:#000; line-height:1.4; text-transform:uppercase; }
+    .soa-header  { text-align:center; margin-bottom:1rem; }
+    .soa-title   { text-align:center; font-weight:bold; font-size:14px; letter-spacing:2px; margin:1rem 0; }
+    .soa-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:1rem; }
+    .soa-readings  { display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr; border-top:1px dashed #000; border-bottom:1px dashed #000; padding:5px 0; margin-bottom:1rem; }
+    .soa-line      { display:grid; grid-template-columns:2.5fr 1fr 1.2fr; margin-bottom:2px; }
+    .soa-subtotal  { display:grid; grid-template-columns:2.5fr 1fr 1.2fr; margin-bottom:2px; font-weight:bold; border-top:1px solid #000; padding-top:3px; margin-top:3px; }
+    .soa-status-badge { display:block; text-align:center; padding:.5rem; border:1px dashed #000; font-weight:bold; margin-top:1.5rem; font-size:12px; }
+    .soa-status-badge.paid    { background:#f0fdf4; border-color:#166534; color:#166534; }
+    .soa-status-badge.pending { background:#fefce8; border-color:#854d0e; color:#854d0e; }
+
+    /* PayMongo Payment Styles */
+    .pay-btn {
+      background: linear-gradient(135deg, #0070f3, #00b4d8);
+      color: #fff; border: none; border-radius: 8px;
+      padding: .4rem .85rem; font-size: .78rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: opacity .2s;
+      display: inline-flex; align-items: center; gap: .3rem;
+    }
+    .pay-btn:hover   { opacity: .85; }
+    .pay-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .paid-badge {
+      display: inline-block; background: #dcfce7; color: #166534;
+      border-radius: 999px; padding: .2rem .65rem; font-size: .72rem;
+      font-weight: 700; letter-spacing: .03em;
+    }
+    .payment-toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: #1e293b; color: #fff; border-radius: 12px; padding: 1rem 1.75rem;
+      font-size: .9rem; z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,.25);
+      animation: slideUp .35s ease;
+    }
+    .payment-toast.success { background: #166534; }
+    .payment-toast.error   { background: #991b1b; }
+    @keyframes slideUp { from{transform:translateX(-50%) translateY(20px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+
+    .link-info-box {
+      background:#eff6ff; padding:1rem; border-radius:8px; font-size:.8rem;
+      color:#1e40af; margin-top:.75rem; border:1px solid #bfdbfe; line-height:1.5;
+    }
+
+    /* ── RECEIPT UPLOAD STYLES ─────────────────────────────────── */
+    .upload-btn {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #fff; border: none; border-radius: 8px;
+      padding: .4rem .85rem; font-size: .78rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: opacity .2s;
+      display: inline-flex; align-items: center; gap: .3rem;
+    }
+    .upload-btn:hover   { opacity: .85; }
+    .upload-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .receipt-badge {
+      display: inline-block; background: #ede9fe; color: #5b21b6;
+      border-radius: 999px; padding: .2rem .65rem; font-size: .72rem;
+      font-weight: 700; letter-spacing: .03em; cursor: pointer;
+      transition: background .2s;
+    }
+    .receipt-badge:hover { background: #ddd6fe; }
+
+    /* Receipt Upload Modal */
+    .receipt-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.6);
+      z-index: 700; display: flex; align-items: center;
+      justify-content: center; padding: 1rem;
+    }
+    .receipt-overlay.hidden { display: none; }
+    .receipt-box {
+      background: #fff; border-radius: 16px; width: 100%;
+      max-width: 460px; padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .receipt-drop-zone {
+      border: 2px dashed #a855f7; border-radius: 12px;
+      padding: 2rem 1rem; text-align: center; cursor: pointer;
+      transition: background .2s, border-color .2s; margin: 1.25rem 0;
+      background: #faf5ff;
+    }
+    .receipt-drop-zone:hover, .receipt-drop-zone.dragover {
+      background: #ede9fe; border-color: #7c3aed;
+    }
+    .receipt-drop-zone input[type="file"] { display: none; }
+    .receipt-preview {
+      width: 100%; max-height: 200px; object-fit: contain;
+      border-radius: 8px; margin-top: .75rem; display: none;
+      border: 1px solid #e5e7eb;
+    }
+    .receipt-progress {
+      height: 6px; border-radius: 999px; background: #e5e7eb;
+      overflow: hidden; margin-top: 1rem; display: none;
+    }
+    .receipt-progress-bar {
+      height: 100%; background: linear-gradient(90deg,#7c3aed,#a855f7);
+      width: 0%; transition: width .3s ease;
+    }
+    .receipt-view-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: #7c3aed; font-size: .8rem; font-weight: 600;
+      text-decoration: none; margin-top: .5rem;
+    }
+    .receipt-view-link:hover { text-decoration: underline; }
+
+    /* Reference number field inside receipt modal */
+    .ref-input-wrap { margin-top: .75rem; }
+    .ref-input-wrap label {
+      display: block; font-size: .8rem; font-weight: 600;
+      color: #374151; margin-bottom: .35rem;
+    }
+    .ref-input-wrap input {
+      width: 100%; padding: .5rem .75rem; border: 1.5px solid #d1d5db;
+      border-radius: 8px; font-size: .9rem; font-family: monospace;
+      letter-spacing: .04em; color: #111827; transition: border-color .2s;
+      box-sizing: border-box;
+    }
+    .ref-input-wrap input:focus {
+      outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+    }
+    .ref-input-wrap .ref-hint {
+      font-size: .72rem; color: #94a3b8; margin-top: .3rem;
+    }
+
+    @media print {
+      .soa-actions { display:none; }
+      .soa-overlay { position:static; padding:0; background:none; }
+      .soa-box { box-shadow:none; max-height:none; border-radius:0; max-width:100%; width:100%; }
+      body { background:white !important; }
+      .page-wrap, header { display:none; }
+    }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a>
+    <a href="bills.html" class="active">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <div>
+      <h2 class="section-title" style="margin-bottom:0;">💡 Monthly Bills Dashboard</h2>
+      <p class="section-sub">Manage your account and view real-time consumption records.</p>
+    </div>
+    <button id="unlinkBtn" class="btn btn-ghost hidden"
+            onclick="unlinkAccount()"
+            style="color:#dc2626; border:1px solid #dc2626;">
+      🔓 Unlink Meter
+    </button>
+  </div>
+
+  <!-- STATE A: NOT LOGGED IN -->
+  <div id="loginPromptView" class="form-card hidden"
+       style="text-align:center; margin-top:2rem; border-top:4px solid var(--gold);">
+    <div style="font-size:3.5rem; margin-bottom:1rem;">🔒</div>
+    <h3 class="form-title">Login Required</h3>
+    <p class="form-subtitle" style="max-width:380px; margin:0 auto 1.5rem;">
+      Please log in to your NORECO I account first, then verify your Meter Serial Number to view your billing history.
+    </p>
+    <a href="login.html" class="btn btn-gold"
+       style="padding:.8rem 2rem; font-size:1rem; width:100%; max-width:260px; display:inline-block; text-align:center;">
+      🔑 Go to Login
+    </a>
+  </div>
+
+  <!-- STATE B: LOGGED IN BUT NOT LINKED -->
+  <div id="unlinkedView" class="form-card hidden"
+       style="text-align:center; margin-top:2rem; border-top:4px solid var(--blue);">
+    <div style="font-size:3.5rem; margin-bottom:1rem;">⚡</div>
+    <h3 class="form-title">Link Your Electric Meter</h3>
+    <p class="form-subtitle" style="max-width:420px; margin:0 auto 1.5rem;">
+      Enter your <strong>Meter Serial Number</strong> stamped on your meter box to securely access your NORECO I billing history. No account number required.
+    </p>
+    <button class="btn btn-blue" onclick="openLinkModal()"
+            style="padding:.8rem 2rem; font-size:1rem; width:100%; max-width:280px;">
+      ⚡ Verify Meter Now
+    </button>
+    <p style="margin-top:.85rem; font-size:.78rem; color:var(--gray-500);">
+      Your Meter SN is verified against NORECO I's live database.
+    </p>
+  </div>
+
+  <!-- STATE C: LINKED — DASHBOARD -->
+  <div id="dashboardView" class="hidden">
+
+    <div class="bill-summary-bar" style="margin-top:1rem;">
+      <div class="sum-item">
+        <div class="sum-label">Meter SN</div>
+        <div class="sum-value" id="meterDisplay" style="font-family:monospace;">—</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">Resident Name</div>
+        <div class="sum-value" id="residentNameDisplay" style="font-size:.95rem;">—</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">Total Outstanding</div>
+        <div class="sum-value" id="totalOutstanding" style="color:#dc2626;">₱0.00</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">Account Status</div>
+        <div class="sum-value" style="color:#16a34a;">● Active</div>
+      </div>
+    </div>
+
+    <div class="consumption-panel">
+      <h3>📈 6-Month Consumption Trend (kWh)</h3>
+      <div class="chart-container" id="consumptionChart"></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <h3>📄 Statement of Accounts (SOA)</h3>
+        <span id="billsCount" style="font-size:.85rem; color:var(--gray-500);"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Billing Month</th>
+            <th>Period Covered</th>
+            <th>Consumption (kWh)</th>
+            <th>Total Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Action</th>
+            <th>Payment</th>
+            <th>Receipt</th>
+          </tr>
+        </thead>
+        <tbody id="billsBody">
+          <tr><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-badge"></div></td><td><div class="skeleton skeleton-badge"></div></td></tr>
+          <tr><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-badge"></div></td><td><div class="skeleton skeleton-badge"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /page-wrap -->
+
+<!-- METER VERIFICATION MODAL -->
+<div class="modal-overlay hidden" id="linkModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLinkModal()">✕</button>
+
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <div style="font-size:2.2rem; margin-bottom:.5rem;">⚡</div>
+      <h3 style="font-size:1.35rem; margin-bottom:.35rem;">Verify Your Meter</h3>
+      <p style="color:var(--gray-500); font-size:.875rem; line-height:1.5;">
+        Enter your <strong>Meter Serial Number</strong> to link your account and access your billing records.
+      </p>
+    </div>
+
+    <div class="form-group">
+      <label>Meter Serial Number (SN) *</label>
+      <input type="text" id="linkMeterSN"
+             placeholder="e.g. SN-987654"
+             maxlength="30"
+             autocomplete="off"
+             style="text-transform:uppercase; font-size:1.05rem; letter-spacing:.05em; font-weight:600;"
+             oninput="validateSN(this)">
+      <span class="validation-msg" id="msgSn">Meter SN must be at least 4 characters.</span>
+    </div>
+
+    <div class="link-info-box">
+      📍 <strong>Where is my Meter SN?</strong><br>
+      It is stamped directly on the front of your electric meter box, and also printed at the top of your physical NORECO I billing statement.
+    </div>
+
+    <button class="btn btn-blue btn-full" id="submitLinkBtn"
+            onclick="submitAccountLink()"
+            style="margin-top:1.25rem; transition:all .3s ease;">
+      🔐 Verify &amp; Link Meter
+    </button>
+
+    <p style="text-align:center; font-size:.72rem; color:var(--gray-500); margin-top:.6rem;">
+      Your SN is verified against NORECO I's database in real time.
+    </p>
+  </div>
+</div>
+
+<!-- SOA MODAL -->
+<div class="soa-overlay hidden" id="soaModal">
+  <div class="soa-box">
+    <div class="soa-actions"
+         style="padding:1rem; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn btn-ghost" onclick="closeSoa()">✕ Close</button>
+      <button class="btn btn-blue"  onclick="window.print()">🖨️ Print / Download SOA</button>
+    </div>
+    <div id="soaContent"></div>
+  </div>
+</div>
+
+<!-- RECEIPT UPLOAD MODAL -->
+<div class="receipt-overlay hidden" id="receiptModal">
+  <div class="receipt-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem;">
+      <h3 style="margin:0; font-size:1.15rem;">📎 Upload Payment Receipt</h3>
+      <button class="btn btn-ghost" onclick="closeReceiptModal()" style="padding:.3rem .6rem;">✕</button>
+    </div>
+    <p style="color:#64748b; font-size:.83rem; margin-bottom:0;">
+      Attach your GCash, Maya, or bank transfer screenshot as proof of payment.
+    </p>
+
+    <div class="receipt-drop-zone" id="receiptDropZone"
+         onclick="document.getElementById('receiptFileInput').click()"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)">
+      <input type="file" id="receiptFileInput" accept="image/*,.pdf"
+             onchange="handleFileSelect(event)">
+      <div id="receiptDropLabel">
+        <div style="font-size:2.5rem; margin-bottom:.5rem;">🖼️</div>
+        <div style="font-weight:600; color:#5b21b6; margin-bottom:.25rem;">Click or drag your receipt here</div>
+        <div style="font-size:.78rem; color:#94a3b8;">Supports: JPG, PNG, WEBP, PDF (max 5MB)</div>
+      </div>
+      <img id="receiptPreview" class="receipt-preview" alt="Receipt preview">
+    </div>
+
+    <div id="receiptFileName" style="font-size:.78rem; color:#64748b; text-align:center; display:none;"></div>
+
+    <!-- Reference Number -->
+    <div class="ref-input-wrap">
+      <label for="receiptRefNumber">📋 Payment Reference Number *</label>
+      <input type="text" id="receiptRefNumber"
+             placeholder="e.g. GC-2026051912345 or 12-digit code"
+             autocomplete="off"
+             oninput="validateRefNumber(this)">
+      <div class="ref-hint">Enter the reference / transaction number shown on your GCash, Maya, or bank receipt.</div>
+    </div>
+
+    <div class="receipt-progress" id="receiptProgress">
+      <div class="receipt-progress-bar" id="receiptProgressBar"></div>
+    </div>
+
+    <div id="receiptSuccessMsg" style="display:none; text-align:center; padding:1rem; background:#f0fdf4;
+         border-radius:8px; color:#166534; font-weight:600; margin-top:.75rem; font-size:.9rem;">
+      ✅ Receipt uploaded successfully!
+      <br>
+      <a id="receiptViewLink" href="#" target="_blank" class="receipt-view-link">
+        🔗 View Uploaded Receipt
+      </a>
+    </div>
+
+    <div style="display:flex; gap:.75rem; margin-top:1.25rem;">
+      <button class="btn btn-ghost" onclick="closeReceiptModal()" style="flex:1;">Cancel</button>
+      <button id="submitReceiptBtn" class="btn btn-blue" onclick="submitReceipt()"
+              style="flex:2; background:linear-gradient(135deg,#7c3aed,#a855f7); border:none;"
+              disabled>
+        📤 Upload Receipt
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+
+<script src="script.js"></script>
+<script type="module">
+import {
+  db, collection, onSnapshot, doc, getDoc, getDocs, query, where
+} from './firebase-config.js';
+import { supabase } from './supabase-config.js';
+import {
+  createPaymentLink,
+  checkPaymentRedirect,
+} from './paymongo.js';
+
+// ── STATE ──────────────────────────────────────────────────────
+let user       = null;
+let billsUnsub = null;
+let paidBillIds  = new Set(); // bills where status === 'Paid' in Firestore
+let receiptUrls  = {};        // billId -> { url, refNumber }
+
+// ── BOOT ───────────────────────────────────────────────────────
+async function boot() {
+  try {
+    user = JSON.parse(localStorage.getItem('ecmsUser') || 'null');
+  } catch(e) {
+    localStorage.removeItem('ecmsUser');
+    user = null;
+  }
+
+  // Handle PayMongo redirect (success / failed)
+  const redirect = checkPaymentRedirect();
+  if (redirect) {
+    if (redirect.status === 'success') {
+      showPaymentToast('✅ Payment completed! Please upload your receipt below.', 'success');
+      // Auto-open receipt modal after a short delay so the page renders first
+      if (redirect.billId) {
+        setTimeout(() => openReceiptModal(redirect.billId, ''), 800);
+      }
+    } else if (redirect.status === 'failed') {
+      showPaymentToast('❌ Payment was not completed. Please try again.', 'error');
+    }
+  }
+
+  renderView();
+}
+
+// ── VIEW STATE MACHINE ─────────────────────────────────────────
+function showOnly(viewId) {
+  ['loginPromptView', 'unlinkedView', 'dashboardView'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById(viewId).classList.remove('hidden');
+}
+
+function renderView() {
+  if (!user) {
+    document.getElementById('unlinkBtn').classList.add('hidden');
+    showOnly('loginPromptView');
+    return;
+  }
+
+  if (user.isLinked && user.meterSN) {
+    document.getElementById('unlinkBtn').classList.remove('hidden');
+    document.getElementById('meterDisplay').textContent        = user.meterSN;
+    document.getElementById('residentNameDisplay').textContent = user.residentName || '—';
+    showOnly('dashboardView');
+    loadBills();
+  } else {
+    document.getElementById('unlinkBtn').classList.add('hidden');
+    showOnly('unlinkedView');
+  }
+}
+
+// ── MODAL HELPERS ──────────────────────────────────────────────
+window.openLinkModal = () => {
+  document.getElementById('linkModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('linkMeterSN').focus(), 100);
+};
+
+window.closeLinkModal = () => {
+  document.getElementById('linkModal').classList.add('hidden');
+  resetLinkModal();
+};
+
+function resetLinkModal() {
+  const inp = document.getElementById('linkMeterSN');
+  inp.value = '';
+  inp.classList.remove('valid', 'invalid');
+  document.getElementById('msgSn').style.display = 'none';
+  const btn = document.getElementById('submitLinkBtn');
+  btn.disabled         = false;
+  btn.textContent      = '🔐 Verify & Link Meter';
+  btn.style.background = '';
+}
+
+// ── SN VALIDATION ──────────────────────────────────────────────
+window.validateSN = function(el) {
+  const val = el.value.trim();
+  const msg = document.getElementById('msgSn');
+  if (val.length >= 4) {
+    el.classList.remove('invalid'); el.classList.add('valid');
+    msg.style.display = 'none';
+  } else if (val.length > 0) {
+    el.classList.remove('valid'); el.classList.add('invalid');
+    msg.style.display = 'block';
+  } else {
+    el.classList.remove('valid', 'invalid');
+    msg.style.display = 'none';
+  }
+};
+
+// ── SUBMIT LINK ────────────────────────────────────────────────
+window.submitAccountLink = async function() {
+  const inp = document.getElementById('linkMeterSN');
+  const sn  = inp.value.trim().toUpperCase();
+  const btn = document.getElementById('submitLinkBtn');
+  const msg = document.getElementById('msgSn');
+
+  if (sn.length < 4) { validateSN(inp); return; }
+
+  btn.disabled    = true;
+  btn.textContent = '🔍 Verifying Meter SN…';
+  msg.style.display = 'none';
+
+  try {
+    // 1. Check users collection for a matching meterSN
+    const userSnap = await getDocs(
+      query(collection(db, 'users'), where('meterSN', '==', sn))
+    );
+
+    if (userSnap.empty) {
+      // 2. Fallback: also check bills collection (for future bills added by staff)
+      const billSnap = await getDocs(
+        query(collection(db, 'bills'), where('meterSN', '==', sn))
+      );
+
+      if (billSnap.empty) {
+        inp.classList.add('invalid');
+        msg.textContent   = '❌ Meter SN not found. Please double-check or contact NORECO I office.';
+        msg.style.display = 'block';
+        btn.disabled      = false;
+        btn.textContent   = '🔐 Verify & Link Meter';
+        return;
+      }
+
+      // Found in bills — use bill data
+      const firstBill = billSnap.docs[0].data();
+      btn.textContent      = '✅ Meter Verified!';
+      btn.style.background = '#16a34a';
+      await new Promise(r => setTimeout(r, 900));
+      user          = user || {};
+      user.isLinked = true;
+      user.meterSN  = sn;
+      if (firstBill.residentName) user.residentName = firstBill.residentName;
+      localStorage.setItem('ecmsUser', JSON.stringify(user));
+      closeLinkModal();
+      renderView();
+      return;
+    }
+
+    // Found in users collection — use user data
+    const userData     = userSnap.docs[0].data();
+    const residentName = userData.name || null;
+
+    btn.textContent      = '✅ Meter Verified!';
+    btn.style.background = '#16a34a';
+
+    await new Promise(r => setTimeout(r, 900));
+
+    user              = user || {};
+    user.isLinked     = true;
+    user.meterSN      = sn;
+    if (residentName) user.residentName = residentName;
+    localStorage.setItem('ecmsUser', JSON.stringify(user));
+
+    closeLinkModal();
+    renderView();
+
+  } catch(err) {
+    console.error('Verification error:', err);
+    msg.textContent   = '⚠️ Connection error. Please try again.';
+    msg.style.display = 'block';
+    btn.disabled      = false;
+    btn.textContent   = '🔐 Verify & Link Meter';
+  }
+};
+
+// ── UNLINK ─────────────────────────────────────────────────────
+window.unlinkAccount = function() {
+  if (!confirm('Unlink this meter from your session?\nYou can re-verify any time.')) return;
+  if (billsUnsub) { billsUnsub(); billsUnsub = null; }
+  user.isLinked = false;
+  delete user.meterSN;
+  delete user.residentName;
+  localStorage.setItem('ecmsUser', JSON.stringify(user));
+  document.getElementById('totalOutstanding').textContent = '₱0.00';
+  document.getElementById('billsCount').textContent = '';
+  document.getElementById('consumptionChart').innerHTML = '';
+  renderView();
+};
+
+// ── LOAD BILLS REALTIME ────────────────────────────────────────
+function loadBills() {
+  if (billsUnsub) { billsUnsub(); billsUnsub = null; }
+
+  // Load existing receipt records from Supabase (url + reference number)
+  supabase
+    .from('payment_receipts')
+    .select('bill_id, receipt_url, reference_number')
+    .eq('meter_sn', user.meterSN)
+    .then(({ data }) => {
+      if (data) {
+        receiptUrls = {};
+        data.forEach(r => {
+          receiptUrls[r.bill_id] = { url: r.receipt_url, ref: r.reference_number || '' };
+        });
+      }
+    })
+    .catch(console.error);
+
+  const q = query(collection(db, 'bills'), where('meterSN', '==', user.meterSN));
+
+  billsUnsub = onSnapshot(q, (snapshot) => {
+    const tbody       = document.getElementById('billsBody');
+    let   outstanding = 0;
+
+    if (snapshot.empty) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:#94a3b8;">
+        📭 No billing records found for Meter SN <strong>${user.meterSN}</strong>.
+      </td></tr>`;
+      renderChart([]);
+      return;
+    }
+
+    let bills = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    bills.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    tbody.innerHTML = bills.map((b, i) => {
+      if (b.status === 'Pending') outstanding += Number(b.amount || 0);
+      const highlight = (i === 0 && b.status === 'Pending') ? 'background:#fffbeb;' : '';
+      const dueCss    = b.status === 'Pending' ? 'color:#dc2626;font-weight:bold;' : '';
+      const alreadyPaid = paidBillIds.has(b.id) || b.status === 'Paid';
+
+      const payCell = alreadyPaid
+        ? `<span class="paid-badge">✓ Paid</span>`
+        : `<button class="pay-btn" onclick="payBill('${b.id}','${b.billMonth || b.period || 'Bill'}',${Number(b.amount||0)})">
+             💳 Pay Now
+           </button>`;
+
+      const existingReceipt = receiptUrls[b.id];
+      const receiptCell = existingReceipt
+        ? `<a href="${existingReceipt.url}" target="_blank" class="receipt-badge"
+               title="Ref: ${existingReceipt.ref || 'n/a'} — Click to view receipt">
+             📎 View Receipt
+           </a>`
+        : `<button class="upload-btn" onclick="openReceiptModal('${b.id}','${b.billMonth || b.period || 'Bill'}')">
+             📎 Upload
+           </button>`;
+
+      return `
+        <tr style="${highlight}">
+          <td><strong>${b.billMonth || b.period || '—'}</strong></td>
+          <td style="font-size:.8rem;color:#64748b;">${b.periodFrom || '—'} to ${b.periodTo || '—'}</td>
+          <td><strong>${b.kwh ?? '—'}</strong> <span style="font-size:.7rem;color:#94a3b8">kWh</span></td>
+          <td style="font-weight:600;">₱${Number(b.amount||0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+          <td style="${dueCss}">${b.dueDate || '—'}</td>
+          <td><span class="badge ${b.status === 'Pending' ? 'pending' : 'paid'}">${b.status || 'Pending'}</span></td>
+          <td><button class="small-btn" onclick="viewSOA('${b.id}')">📄 View SOA</button></td>
+          <td>${payCell}</td>
+          <td>${receiptCell}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('totalOutstanding').textContent =
+      '₱' + outstanding.toLocaleString('en-US', {minimumFractionDigits:2});
+    document.getElementById('billsCount').textContent =
+      bills.length + ' record' + (bills.length !== 1 ? 's' : '');
+
+    renderChart(bills);
+  }, err => console.error('Bills snapshot error:', err));
+}
+
+// ── CONSUMPTION CHART ──────────────────────────────────────────
+function renderChart(bills) {
+  const container = document.getElementById('consumptionChart');
+  container.innerHTML = '';
+
+  if (!bills.length) {
+    container.innerHTML = '<div style="width:100%;text-align:center;color:#94a3b8;font-size:.9rem;">Not enough data to display chart.</div>';
+    return;
+  }
+
+  const chartData = [...bills].reverse().slice(-6);
+  const maxKwh    = Math.max(...chartData.map(b => Number(b.kwh || 0)), 1);
+
+  chartData.forEach((b, i) => {
+    const kwh    = Number(b.kwh || 0);
+    const height = (kwh / maxKwh) * 90;
+    const isNow  = i === chartData.length - 1;
+    const label  = (b.billMonth || b.period || 'N/A').substring(0, 3);
+
+    const grp = document.createElement('div');
+    grp.className = 'chart-bar-group';
+    grp.innerHTML = `
+      <div style="font-size:.65rem;color:#94a3b8;margin-bottom:2px;">${kwh}</div>
+      <div class="chart-bar${isNow ? ' current' : ''}" style="height:${height}%;" title="${kwh} kWh"></div>
+      <div class="chart-label">${label}</div>`;
+    container.appendChild(grp);
+  });
+}
+
+// ── SOA GENERATION — uses rates/2026-05 from Firestore ─────────
+window.viewSOA = async function(billId) {
+  const container = document.getElementById('soaContent');
+  container.innerHTML = `
+    <div style="text-align:center;padding:3rem;">
+      Calculating unbundled charges…<br><br>
+      <span style="font-size:2rem;">🖨️</span>
+    </div>`;
+  document.getElementById('soaModal').classList.remove('hidden');
+
+  try {
+    // 1. Fetch the bill document
+    const billSnap = await getDoc(doc(db, 'bills', billId));
+    if (!billSnap.exists()) throw new Error('Bill record not found.');
+    const bill = billSnap.data();
+
+    // 2. Determine rate month — use bill's billMonth or fall back to '2026-05'
+    //    The Firestore document ID under 'rates' collection follows the format YYYY-MM
+    let rateMonth = '2026-05'; // default
+    if (bill.billMonth) {
+      // Try to parse "May 2026" -> "2026-05"
+      const parsed = new Date(bill.billMonth + ' 1');
+      if (!isNaN(parsed)) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        rateMonth = `${y}-${m}`;
+      }
+    }
+
+    // 3. Fetch the rates document
+    const ratesSnap = await getDoc(doc(db, 'rates', rateMonth));
+    if (!ratesSnap.exists()) {
+      // Fall back to 2026-05 if the specific month doesn't exist
+      const fallbackSnap = await getDoc(doc(db, 'rates', '2026-05'));
+      if (!fallbackSnap.exists()) throw new Error(`Rate table "rates/${rateMonth}" not found in Firestore.`);
+      var r = fallbackSnap.data();
+    } else {
+      var r = ratesSnap.data();
+    }
+
+    const kwh = Number(bill.kwh || 0);
+
+    // ── POWER CHARGES ──────────────────────────────────────────
+    const gen      = kwh * (r.generation      || 0);
+    const trans    = kwh * (r.transmission    || 0);
+    const sysLoss  = kwh * (r.system_loss     || 0);
+    const dist     = kwh * (r.distribution    || 0);
+    const supply   = kwh * (r.supply          || 0);
+    const meterSys = kwh * (r.metering_system || 0);
+    const meterFix = Number(r.metering_retail_customer || 0);
+
+    // ── VALUE ADDED TAX ────────────────────────────────────────
+    const vatGen     = kwh * (r.gen_vat      || 0);
+    const vatTrans   = kwh * (r.trans_vat    || 0);
+    const vatSysLoss = kwh * (r.sysloss_vat  || 0);
+    const distBase   = dist + supply + meterSys + meterFix;
+    const vatDist    = distBase * ((r.distribution_percent || 0) / 100);
+
+    // ── UNIVERSAL CHARGES & ADJUSTMENTS ───────────────────────
+    const ucMe     = kwh * (r.missionary_electrification || 0);
+    const fitAll   = kwh * (r.fit_all         || 0);
+    const env      = kwh * (r.environmental   || 0);
+    const npc      = kwh * (r.npc_stranded_debts || 0);
+    const uog      = kwh * (r.uog             || 0);
+    const osla     = kwh * (r.osla            || 0);
+    const capex    = kwh * (r.capex           || 0);
+    const otherKwh = kwh * (r.other_kwh       || 0);
+
+    // ── SUBTOTALS ──────────────────────────────────────────────
+    const totalCharges     = gen + trans + sysLoss + dist + supply + meterSys + meterFix;
+    const totalTaxes       = vatGen + vatTrans + vatSysLoss + vatDist;
+    const totalAdjustments = ucMe + fitAll + env + npc + uog + osla + capex + otherKwh;
+    const grandTotal       = totalCharges + totalTaxes + totalAdjustments;
+
+    const fmt  = n => Number(n || 0).toFixed(2);
+    const fmtr = n => Number(n || 0).toFixed(4);
+
+    container.innerHTML = `
+      <div class="soa-header">
+        <h2 style="margin:0;font-size:13px;">${r.cooperative || 'NORECO I'}</h2>
+        <p style="font-size:9px;margin:2px 0;">NEGROS ORIENTAL I ELECTRIC COOPERATIVE, INC.</p>
+        <p style="font-size:9px;margin:2px 0;">Bindoy, Negros Oriental</p>
+      </div>
+
+      <div class="soa-title">STATEMENT OF ACCOUNT</div>
+
+      <div class="soa-meta-grid">
+        <span>METER SN :</span>  <strong>${user.meterSN || '—'}</strong>
+        <span>BILL MONTH:</span> <strong>${bill.billMonth || bill.period || '—'}</strong>
+        <span>RESIDENT  :</span> <strong>${bill.residentName || user.residentName || '—'}</strong>
+        <span>DUE DATE  :</span> <strong>${bill.dueDate || '—'}</strong>
+      </div>
+
+      <div class="soa-readings">
+        <span style="font-weight:bold;">TYPE</span>
+        <span style="font-weight:bold;">PREV</span>
+        <span style="font-weight:bold;">PRES</span>
+        <span style="font-weight:bold;">KWH</span>
+        <span>RESIDENTIAL</span>
+        <span>${bill.prevReading ?? '—'}</span>
+        <span>${bill.presReading ?? kwh}</span>
+        <span>${kwh}</span>
+      </div>
+
+      <div class="soa-line"><strong>POWER CHARGES</strong><strong>RATE (PHP/KWH)</strong><strong>AMOUNT (PHP)</strong></div>
+      <div class="soa-line"><span>Generation</span>       <span>${fmtr(r.generation)}</span>         <span>${fmt(gen)}</span></div>
+      <div class="soa-line"><span>Transmission</span>     <span>${fmtr(r.transmission)}</span>       <span>${fmt(trans)}</span></div>
+      <div class="soa-line"><span>System Loss</span>      <span>${fmtr(r.system_loss)}</span>        <span>${fmt(sysLoss)}</span></div>
+      <div class="soa-line"><span>Distribution</span>     <span>${fmtr(r.distribution)}</span>       <span>${fmt(dist)}</span></div>
+      <div class="soa-line"><span>Supply</span>           <span>${fmtr(r.supply)}</span>             <span>${fmt(supply)}</span></div>
+      <div class="soa-line"><span>Metering System</span>  <span>${fmtr(r.metering_system)}</span>   <span>${fmt(meterSys)}</span></div>
+      <div class="soa-line"><span>Metering (Fixed)</span> <span>— /bill</span>                       <span>${fmt(meterFix)}</span></div>
+      <div class="soa-subtotal"><span>Subtotal — Charges</span><span></span><span>${fmt(totalCharges)}</span></div>
+
+      <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+
+      <div class="soa-line"><strong>VALUE ADDED TAX</strong><strong>RATE</strong><strong>AMOUNT (PHP)</strong></div>
+      <div class="soa-line"><span>Generation VAT</span>   <span>${fmtr(r.gen_vat)}</span>           <span>${fmt(vatGen)}</span></div>
+      <div class="soa-line"><span>Transmission VAT</span> <span>${fmtr(r.trans_vat)}</span>         <span>${fmt(vatTrans)}</span></div>
+      <div class="soa-line"><span>System Loss VAT</span>  <span>${fmtr(r.sysloss_vat)}</span>       <span>${fmt(vatSysLoss)}</span></div>
+      <div class="soa-line"><span>Distribution VAT</span> <span>${r.distribution_percent || 0}%</span>    <span>${fmt(vatDist)}</span></div>
+      <div class="soa-subtotal"><span>Subtotal — VAT</span><span></span><span>${fmt(totalTaxes)}</span></div>
+
+      <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+
+      <div class="soa-line"><strong>ADJUSTMENTS &amp; UNIVERSAL CHARGES</strong><strong>RATE</strong><strong>AMOUNT (PHP)</strong></div>
+      <div class="soa-line"><span>Missionary Electrification</span> <span>${fmtr(r.missionary_electrification)}</span> <span>${fmt(ucMe)}</span></div>
+      <div class="soa-line"><span>FIT-ALL</span>                    <span>${fmtr(r.fit_all)}</span>                    <span>${fmt(fitAll)}</span></div>
+      <div class="soa-line"><span>Environmental</span>              <span>${fmtr(r.environmental)}</span>              <span>${fmt(env)}</span></div>
+      <div class="soa-line"><span>NPC Stranded Debts</span>         <span>${fmtr(r.npc_stranded_debts)}</span>         <span>${fmt(npc)}</span></div>
+      <div class="soa-line"><span>UOG</span>                        <span>${fmtr(r.uog)}</span>                        <span>${fmt(uog)}</span></div>
+      <div class="soa-line"><span>OSLA</span>                       <span>${fmtr(r.osla)}</span>                       <span>${fmt(osla)}</span></div>
+      <div class="soa-line"><span>CAPEX</span>                      <span>${fmtr(r.capex)}</span>                      <span>${fmt(capex)}</span></div>
+      <div class="soa-line"><span>Other Charges</span>              <span>${fmtr(r.other_kwh)}</span>                  <span>${fmt(otherKwh)}</span></div>
+      <div class="soa-subtotal"><span>Subtotal — Adjustments</span><span></span><span>${fmt(totalAdjustments)}</span></div>
+
+      <div style="border-top:2px solid #000;margin:8px 0;"></div>
+
+      <div class="soa-status-badge ${(bill.status || 'pending').toLowerCase()}">
+        TOTAL AMOUNT DUE: PHP ${grandTotal.toLocaleString('en-US',{minimumFractionDigits:2})}
+        <br><small style="font-size:10px;">STATUS: ${(bill.status || 'PENDING').toUpperCase()}</small>
+      </div>
+
+      <div style="text-align:center;margin-top:12px;font-size:8px;border:1px solid #000;padding:5px;letter-spacing:1px;">
+        OFFICIAL DIGITAL STATEMENT — NORECO I ELECTSERVICE ECMS<br>
+        RATES EFFECTIVE: ${r.effective_date || rateMonth}
+      </div>`;
+
+  } catch(err) {
+    console.error('SOA error:', err);
+    container.innerHTML = `
+      <div style="text-align:center;color:#dc2626;padding:2rem;font-family:sans-serif;">
+        <div style="font-size:2rem;margin-bottom:1rem;">⚠️</div>
+        <strong>Failed to generate SOA</strong><br>
+        <small style="color:#64748b;">${err.message}</small>
+      </div>`;
+  }
+};
+
+window.closeSoa = () => document.getElementById('soaModal').classList.add('hidden');
+
+// ── PAY BILL via PayMongo ──────────────────────────────────────
+window.payBill = async function(billId, billMonth, amountPHP) {
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Processing…'; }
+
+  try {
+    const { checkoutUrl } = await createPaymentLink({
+      amountPHP,
+      description: `NORECO I Electric Bill – ${billMonth}`,
+      meterSN:     user.meterSN,
+      billId,
+      userEmail:   user.email || '',
+      userName:    user.residentName || user.name || '',
+    });
+
+    // Redirect to PayMongo hosted checkout
+    window.location.href = checkoutUrl;
+
+  } catch (err) {
+    console.error('PayMongo error:', err);
+    showPaymentToast('⚠️ Could not create payment link: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '💳 Pay Now'; }
+  }
+};
+
+// ── PAYMENT TOAST ──────────────────────────────────────────────
+function showPaymentToast(message, type = 'info') {
+  const existing = document.querySelector('.payment-toast');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.className = `payment-toast ${type}`;
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .4s';
+    el.style.opacity    = '0';
+    setTimeout(() => el.remove(), 400);
+  }, 5000);
+}
+
+// ── RECEIPT UPLOAD ─────────────────────────────────────────────
+let _receiptBillId    = null;
+let _receiptBillMonth = null;
+let _receiptFile      = null;
+
+window.openReceiptModal = function(billId, billMonth) {
+  _receiptBillId    = billId;
+  _receiptBillMonth = billMonth;
+  _receiptFile      = null;
+  // Reset modal state
+  document.getElementById('receiptPreview').style.display    = 'none';
+  document.getElementById('receiptDropLabel').style.display  = '';
+  document.getElementById('receiptFileName').style.display   = 'none';
+  document.getElementById('receiptSuccessMsg').style.display = 'none';
+  document.getElementById('receiptProgress').style.display   = 'none';
+  document.getElementById('receiptProgressBar').style.width  = '0%';
+  document.getElementById('receiptFileInput').value          = '';
+  document.getElementById('receiptRefNumber').value          = '';
+  document.getElementById('receiptRefNumber').style.borderColor = '';
+  document.getElementById('submitReceiptBtn').disabled       = true;
+  document.getElementById('receiptModal').classList.remove('hidden');
+};
+
+window.closeReceiptModal = function() {
+  document.getElementById('receiptModal').classList.add('hidden');
+  _receiptBillId = null; _receiptBillMonth = null; _receiptFile = null;
+};
+
+// Drag-and-drop helpers
+window.handleDragOver = function(e) {
+  e.preventDefault();
+  document.getElementById('receiptDropZone').classList.add('dragover');
+};
+window.handleDragLeave = function() {
+  document.getElementById('receiptDropZone').classList.remove('dragover');
+};
+window.handleDrop = function(e) {
+  e.preventDefault();
+  document.getElementById('receiptDropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) applyReceiptFile(file);
+};
+window.handleFileSelect = function(e) {
+  const file = e.target.files[0];
+  if (file) applyReceiptFile(file);
+};
+
+function applyReceiptFile(file) {
+  // Validate size (5 MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    showPaymentToast('⚠️ File is too large. Maximum size is 5 MB.', 'error');
+    return;
+  }
+  _receiptFile = file;
+  document.getElementById('receiptFileName').textContent = `📄 ${file.name}`;
+  document.getElementById('receiptFileName').style.display = 'block';
+  updateSubmitBtn();
+
+  // Show image preview (skip for PDF)
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('receiptPreview');
+      preview.src           = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('receiptDropLabel').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Enable submit only when both file AND ref number are present
+function updateSubmitBtn() {
+  const ref = document.getElementById('receiptRefNumber').value.trim();
+  document.getElementById('submitReceiptBtn').disabled = !(_receiptFile && ref.length >= 4);
+}
+
+window.validateRefNumber = function(el) {
+  updateSubmitBtn();
+  el.style.borderColor = el.value.trim().length >= 4 ? '#16a34a' : '';
+};
+
+window.submitReceipt = async function() {
+  if (!_receiptFile || !_receiptBillId) return;
+
+  const refNumber = document.getElementById('receiptRefNumber').value.trim();
+  if (refNumber.length < 4) {
+    showPaymentToast('⚠️ Please enter a valid reference number.', 'error');
+    document.getElementById('receiptRefNumber').focus();
+    return;
+  }
+
+  const btn      = document.getElementById('submitReceiptBtn');
+  const progress = document.getElementById('receiptProgress');
+  const bar      = document.getElementById('receiptProgressBar');
+  btn.disabled   = true;
+  btn.textContent = '⏳ Uploading…';
+  progress.style.display = 'block';
+
+  // Animate progress bar (simulated; Supabase JS doesn't expose upload progress)
+  let pct = 0;
+  const ticker = setInterval(() => {
+    pct = Math.min(pct + 10, 85);
+    bar.style.width = pct + '%';
+  }, 150);
+
+  try {
+    // Embed the ref number in the folder path so it's stored without needing a DB table write
+    const safeRef  = refNumber.replace(/[^a-zA-Z0-9\-_]/g, '_');
+    const folder   = `receipts/${user.meterSN}/${_receiptBillId}/ref_${safeRef}`;
+    const { uploadFile } = await import('./supabase-config.js');
+    const publicUrl = await uploadFile(_receiptFile, folder);
+
+    // ── Save receipt metadata to Firestore instead of Supabase table (no RLS issues) ──
+    const { collection: col, addDoc, serverTimestamp } = await import('./firebase-config.js');
+    await addDoc(col(db, 'payment_receipts'), {
+      bill_id:          _receiptBillId,
+      meter_sn:         user.meterSN,
+      bill_month:       _receiptBillMonth,
+      receipt_url:      publicUrl,
+      reference_number: refNumber,
+      uid:              user.uid || 'guest',
+      uploaded_at:      serverTimestamp(),
+    });
+
+    clearInterval(ticker);
+    bar.style.width = '100%';
+
+    // Update local cache so table refreshes without reload
+    receiptUrls[_receiptBillId] = { url: publicUrl, ref: refNumber };
+
+    // Show success state inside modal
+    document.getElementById('receiptSuccessMsg').style.display = 'block';
+    document.getElementById('receiptViewLink').href = publicUrl;
+    btn.textContent = '✅ Uploaded!';
+    btn.style.background = '#16a34a';
+
+    showPaymentToast('✅ Receipt uploaded successfully!', 'success');
+
+    // Refresh the bills table so the receipt badge appears
+    setTimeout(() => {
+      closeReceiptModal();
+      loadBills();
+    }, 2000);
+
+  } catch(err) {
+    clearInterval(ticker);
+    console.error('Receipt upload error:', err);
+    bar.style.width    = '0%';
+    progress.style.display = 'none';
+    btn.disabled       = false;
+    btn.textContent    = '📤 Upload Receipt';
+    btn.style.background = '';
+    showPaymentToast('⚠️ Upload failed: ' + err.message, 'error');
+  }
+};
+
+// ── INIT ───────────────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Report a Problem</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a> <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="form-card" id="reportFormWrap">
+    <h2 class="form-title">⚠️ Report an Electrical Problem</h2>
+    <p class="form-subtitle">Describe the issue and upload a photo. A technician will be assigned automatically.</p>
+
+    <label style="font-weight:600;color:var(--blue-deep);display:block;margin-bottom:.75rem;">Problem Type *</label>
+    <div class="problem-grid">
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Power Outage')"><span class="pt-icon">🔌</span><span>Power Outage</span></button>
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Flickering Lights')"><span class="pt-icon">💡</span><span>Flickering Lights</span></button>
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Damaged Wire')"><span class="pt-icon">⚡</span><span>Damaged Wire</span></button>
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Meter Issue')"><span class="pt-icon">📟</span><span>Meter Issue</span></button>
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Electric Post')"><span class="pt-icon">🏗️</span><span>Electric Post</span></button>
+      <button type="button" class="problem-type-btn" onclick="selectType(this,'Other')"><span class="pt-icon">❓</span><span>Other</span></button>
+    </div>
+    <span class="error" id="typeErr"></span>
+
+    <form id="reportForm" style="margin-top:1.25rem;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="rName" placeholder="Juan Dela Cruz" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="rPhone" placeholder="09XX-XXX-XXXX" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address / Location of Problem *</label>
+        <input type="text" id="rAddress" placeholder="e.g. Purok 3, Brgy. Tambulan, Bindoy" required>
+      </div>
+      <div class="form-group">
+        <label>Describe the Problem *</label>
+        <textarea id="rDesc" rows="4" placeholder="Describe what happened and when it started…" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Upload Photo (optional)</label>
+        <input type="file" id="rPhoto" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label>Urgency Level *</label>
+        <select id="rUrgency" required>
+          <option value="">Select urgency</option>
+          <option value="Low">Low – Not urgent, can wait</option>
+          <option value="Medium">Medium – Needs attention soon</option>
+          <option value="High">High – Affecting daily activities</option>
+          <option value="Critical">Critical – Safety hazard!</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-blue btn-full" id="submitReportBtn" style="margin-top:.5rem;">
+        📤 Submit Report
+      </button>
+    </form>
+
+    <div id="reportSuccess" class="success-box hidden">
+      <h3>✓ Report Submitted!</h3>
+      <p>Request ID: <strong id="reportRefNum"></strong></p>
+      <p>A technician will be assigned and you'll be notified shortly.</p>
+      <button class="btn btn-blue" onclick="resetReportForm()" style="margin-top:1rem;">Submit Another</button>
+      <a href="index.html" class="btn btn-ghost" style="margin-top:1rem;display:inline-block;margin-left:.5rem;">Home</a>
+    </div>
+  </div>
+
+  <!-- My Reports (realtime) -->
+  <div class="table-wrap" style="margin-top:2rem;">
+    <div class="table-head"><h3>📋 My Reports</h3></div>
+    <table>
+      <thead><tr>
+        <th>Ref #</th><th>Type</th><th>Date</th><th>Urgency</th><th>Status</th><th>Action</th>
+      </tr></thead>
+      <tbody id="myReportsBody">
+        <tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:2rem;">No reports yet. Submit one above!</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script type="module">
+import { db, collection, addDoc, onSnapshot, query,
+         orderBy, serverTimestamp, where } from './firebase-config.js';
+import { uploadFile } from './supabase-config.js';
+
+const user = JSON.parse(localStorage.getItem('ecmsUser') || 'null');
+let chosenType = '';
+
+window.selectType = function(btn, type) {
+  document.querySelectorAll('.problem-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  chosenType = type;
+  document.getElementById('typeErr').textContent = '';
+};
+
+window.resetReportForm = function() {
+  document.getElementById('reportForm').reset();
+  document.querySelectorAll('.problem-type-btn').forEach(b => b.classList.remove('selected'));
+  chosenType = '';
+  document.getElementById('reportSuccess').classList.add('hidden');
+  document.getElementById('reportForm').classList.remove('hidden');
+};
+
+// ── SUBMIT REPORT ──────────────────────────────────────────────
+document.getElementById('reportForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!chosenType) { document.getElementById('typeErr').textContent = 'Please select a problem type.'; return; }
+
+  const btn = document.getElementById('submitReportBtn');
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+
+  try {
+    const refNum = 'REQ-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+    let photoURL = null;
+
+    // Upload photo if provided
+    const photoFile = document.getElementById('rPhoto').files[0];
+    if (photoFile) {
+      photoURL = await uploadFile(photoFile, `reports/${refNum}`);
+    }
+
+    await addDoc(collection(db, 'reports'), {
+      refNum,
+      type:      chosenType,
+      name:      document.getElementById('rName').value,
+      phone:     document.getElementById('rPhone').value,
+      address:   document.getElementById('rAddress').value,
+      desc:      document.getElementById('rDesc').value,
+      urgency:   document.getElementById('rUrgency').value,
+      photoURL,
+      uid:       user?.uid || 'guest',
+      status:    'Pending',
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById('reportRefNum').textContent = refNum;
+    document.getElementById('reportForm').classList.add('hidden');
+    document.getElementById('reportSuccess').classList.remove('hidden');
+    showToast('Report submitted!', 'success');
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.textContent = '📤 Submit Report'; btn.disabled = false;
+  }
+});
+
+// ── REALTIME MY REPORTS ────────────────────────────────────────
+const reportsQuery = user?.uid
+  ? query(collection(db,'reports'), where('uid','==',user.uid))
+  : query(collection(db,'reports'));
+
+onSnapshot(reportsQuery, (snap) => {
+  const tbody = document.getElementById('myReportsBody');
+  if (snap.empty) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:2rem;">No reports yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = snap.docs.map(d => {
+    const r = d.data();
+    const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : '—';
+    return `
+      <tr>
+        <td><strong>${r.refNum}</strong></td>
+        <td>${r.type}</td>
+        <td>${date}</td>
+        <td><span class="badge ${r.urgency==='Critical'?'overdue':r.urgency==='High'?'pending':'review'}">${r.urgency}</span></td>
+        <td><span class="badge ${r.status==='Completed'?'paid':r.status==='In Progress'?'scheduled':'review'}">${r.status}</span></td>
+        <td>
+          ${r.assignedGroup
+            ? `<button class="small-btn" onclick="window.location.href='rate.html?ref=${r.refNum}&group=${encodeURIComponent(r.assignedGroup.groupName||'')}&leader=${encodeURIComponent(r.assignedGroup.leader||'')}'">⭐ Rate Group</button>`
+            : `<span style="color:var(--gray-400);font-size:.78rem;font-style:italic;">No group assigned</span>`
+          }
+        </td>
+      </tr>
+    `;
+  }).join('');
+});
+</script>
+</body>
+</html>

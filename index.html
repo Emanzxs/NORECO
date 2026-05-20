@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – ElectService ECMS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+ <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a> <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+<style>
+  .hero-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 420px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,.18);
+  }
+
+  /* LEFT PANEL */
+  .hero-left {
+    position: relative;
+    background: linear-gradient(135deg, #001540 0%, #002d7a 60%, #0a3fa0 100%);
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-left-bg {
+    position: absolute; inset: 0;
+    background: url('assets/banner.jpg') center/cover no-repeat;
+    opacity: .12;
+  }
+  .hero-left-accent {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+  }
+  .hero-left-content { position: relative; z-index: 2; }
+  .hero-left-sub {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #fbbf24;
+    margin-bottom: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .hero-left-sub::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 3px;
+    background: #fbbf24;
+    border-radius: 2px;
+  }
+  .hero-left-content h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.95rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin: 0 0 .6rem;
+  }
+  .hero-left-tagline {
+    font-size: .85rem;
+    font-weight: 700;
+    color: #fbbf24;
+    letter-spacing: .04em;
+    margin-bottom: 1.5rem;
+  }
+  .hero-btn-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: #fbbf24;
+    color: #001540;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88rem;
+    font-weight: 800;
+    padding: .65rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: .2s;
+    width: fit-content;
+  }
+  .hero-btn-gold:hover { background: #f59e0b; transform: translateY(-1px); }
+
+  /* RIGHT PANEL */
+  .hero-right {
+    position: relative;
+    background: linear-gradient(135deg, #0a2a6e 0%, #1a4fa8 50%, #0d6efd 100%);
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-right-bg {
+    position: absolute; inset: 0;
+    background: url('assets/banner.jpg') center/cover no-repeat;
+    opacity: .1;
+  }
+  .hero-right-content { position: relative; z-index: 2; }
+  .hero-right-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: #fbbf24;
+    color: #001540;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .3rem .85rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+    width: fit-content;
+  }
+  .hero-right-content h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.95rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin: 0 0 .9rem;
+  }
+  .hero-right-content p {
+    font-size: .9rem;
+    color: rgba(255,255,255,.8);
+    line-height: 1.75;
+    margin: 0 0 1.5rem;
+    max-width: 340px;
+  }
+  .hero-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: transparent;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88rem;
+    font-weight: 600;
+    padding: .65rem 1.5rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,.55);
+    text-decoration: none;
+    transition: .2s;
+    width: fit-content;
+  }
+  .hero-btn-outline:hover {
+    border-color: #fff;
+    background: rgba(255,255,255,.1);
+  }
+
+  /* Divider line between panels */
+  .hero-divider {
+    width: 1px;
+    background: rgba(255,255,255,.15);
+    align-self: stretch;
+  }
+
+  @media(max-width: 900px) {
+    .hero-split { grid-template-columns: 1fr; min-height: auto; }
+    .hero-divider { display: none; }
+    .hero-left, .hero-right { padding: 2.25rem 1.75rem; }
+    .hero-left-content h1,
+    .hero-right-content h2 { font-size: 1.6rem; }
+  }
+</style>
+
+<!-- Split Hero -->
+<div class="page-wrap">
+<div class="hero-split" style="margin-top:1.5rem;">
+  <!-- LEFT: Welcome / NORECO I branding -->
+  <div class="hero-left">
+    <div class="hero-left-bg"></div>
+    <div class="hero-left-accent"></div>
+    <div class="hero-left-content">
+      <div class="hero-left-sub">Negros Oriental I Electric Cooperative</div>
+      <h1>Welcome to NORECO I<br>Negros Oriental I Electric Cooperative, Inc.</h1>
+      <div class="hero-left-tagline">BASTA MAAYONG SERBISYO! NORECO UNO</div>
+      <a href="about.html" class="hero-btn-gold">⚡ Get Started</a>
+    </div>
+  </div>
+
+  <!-- RIGHT: ElectService pitch -->
+  <div class="hero-right">
+    <div class="hero-right-bg"></div>
+    <div class="hero-right-content">
+      <div class="hero-right-badge">⚡ Negros Oriental I Electric Cooperative</div>
+      <h2>Modern Electric Services, Right at Your Fingertips</h2>
+      <p>Report problems, apply for permits, pay bills, and track requests — all in one place.</p>
+      <a href="report.html" class="hero-btn-outline">⚠️ Report a Problem</a>
+    </div>
+  </div>
+</div>
+  <h2 class="section-title">Our Services</h2>
+  <p class="section-sub">Everything you need to manage your electrical services online.</p>
+  <div class="services-grid">
+    <a href="report.html" class="svc-card"><span class="svc-icon">⚠️</span><h3>Report a Problem</h3><p>Report electrical issues with photos and details. Track your request status anytime.</p><span class="svc-arrow">→</span></a>
+    <a href="building-permit.html" class="svc-card"><span class="svc-icon">🏗️</span><h3>Building Permit</h3><p>Apply for new electrical connection permits. Upload documents and get notified.</p><span class="svc-arrow">→</span></a>
+    <a href="bills.html" class="svc-card"><span class="svc-icon">💡</span><h3>Monthly Bills</h3><p>View and pay your electricity bills online. Download receipts instantly.</p><span class="svc-arrow">→</span></a>
+    <a href="seminar.html" class="svc-card"><span class="svc-icon">📅</span><h3>Register for Seminar</h3><p>Attend safety seminars and training sessions required for new connections.</p><span class="svc-arrow">→</span></a>
+    <a href="faq.html" class="svc-card"><span class="svc-icon">❓</span><h3>FAQ & Troubleshooting</h3><p>Find answers to common electrical problems before submitting a request.</p><span class="svc-arrow">→</span></a>
+    <a href="dashboard.html" class="svc-card" id="dashSvcCard" style="display:none"><span class="svc-icon">📊</span><h3>Staff Dashboard</h3><p>Manage service requests, permits, installations and billing operations.</p><span class="svc-arrow">→</span></a>
+    <a href="admin.html" class="svc-card" id="adminSvcCard" style="display:none"><span class="svc-icon">🛡️</span><h3>Admin Panel</h3><p>System-wide reports, user management, and data export for administrators.</p><span class="svc-arrow">→</span></a>
+    <a href="new-connection.html" class="svc-card">
+      <span class="svc-icon">🔌</span>
+      <h3>New Connection</h3>
+      <p>Apply for a permanent or temporary electrical connection. Upload requirements and track status.</p>
+      <span class="svc-arrow">→</span>
+    </a>
+  </div>
+  <div class="about-strip">
+    <img src="assets/noreco-logo.jpeg" style="width:80px;height:80px;border-radius:50%;border:3px solid var(--gold);object-fit:cover;flex-shrink:0;" alt="NORECO I Logo">
+    <div>
+      <h2>About NORECO I</h2>
+      <p>Negros Oriental I Electric Cooperative (NORECO I) provides reliable electricity services to communities in Bindoy, Negros Oriental. The ElectService system improves efficiency, transparency, and accessibility for all residents — integrating service requests, permit processing, installation scheduling, and billing into one modern platform.</p>
+    </div>
+  </div>
+
+
+</div>
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script>
+(function(){
+  const u=JSON.parse(localStorage.getItem('ecmsUser')||'null');
+  if(u&&(u.role==='staff'||u.role==='admin')){
+    const c=document.getElementById('dashSvcCard');
+    if(c) c.style.display='block';
+  }
+  if(u&&u.role==='admin'){
+    const a=document.getElementById('adminSvcCard');
+    if(a) a.style.display='block';
+  }
+})();
+</script>
+</body>
+</html>

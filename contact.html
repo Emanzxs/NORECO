@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us | NORECO I</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    :root{
+      --primary:#002060;
+      --secondary:#1a3a7a;
+      --gold:#fbbf24;
+      --light:#f8fafc;
+      --card:#ffffff;
+      --text:#374151;
+      --border:#e5e7eb;
+    }
+
+    body{
+      background:var(--light);
+      margin:0;
+      font-family:Arial, sans-serif;
+      color:var(--text);
+    }
+
+    .contact-page{
+      max-width:1300px;
+      margin:auto;
+      padding:2rem 1rem 4rem;
+    }
+
+    .hero-contact{
+      background:
+        linear-gradient(rgba(0,32,96,.85), rgba(0,32,96,.85)),
+        url('assets/noreco-logo.jpeg');
+      background-size:cover;
+      background-position:center;
+      border-radius:24px;
+      padding:4rem 2rem;
+      text-align:center;
+      color:white;
+      margin-bottom:2rem;
+      box-shadow:0 10px 30px rgba(0,0,0,.12);
+    }
+
+    .hero-contact h1{
+      font-size:3rem;
+      margin-bottom:.5rem;
+    }
+
+    .hero-contact p{
+      opacity:.9;
+      max-width:700px;
+      margin:auto;
+      line-height:1.7;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:1rem;
+      margin-bottom:2rem;
+    }
+
+    .quick-card{
+      background:white;
+      border-radius:18px;
+      padding:1.5rem;
+      text-align:center;
+      border:1px solid var(--border);
+      box-shadow:0 4px 18px rgba(0,0,0,.05);
+      transition:.3s;
+    }
+
+    .quick-card:hover{
+      transform:translateY(-4px);
+    }
+
+    .quick-card .icon{
+      font-size:2rem;
+      margin-bottom:.8rem;
+    }
+
+    .quick-card h3{
+      color:var(--primary);
+      margin-bottom:.5rem;
+    }
+
+    .section-title{
+      color:var(--primary);
+      font-size:2rem;
+      margin-bottom:1rem;
+    }
+
+    .contact-layout{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:2rem;
+      margin-bottom:2rem;
+    }
+
+    .card{
+      background:white;
+      border-radius:20px;
+      padding:2rem;
+      border:1px solid var(--border);
+      box-shadow:0 4px 20px rgba(0,0,0,.05);
+    }
+
+    .office-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:1rem;
+    }
+
+    .office-table th{
+      background:#eff6ff;
+      color:var(--primary);
+      text-align:left;
+      padding:1rem;
+      font-size:.9rem;
+    }
+
+    .office-table td{
+      padding:1rem;
+      border-top:1px solid #e5e7eb;
+      font-size:.9rem;
+      vertical-align:top;
+    }
+
+    .office-table tr:hover{
+      background:#f9fafb;
+    }
+
+    .contact-form{
+      display:flex;
+      flex-direction:column;
+      gap:1rem;
+    }
+
+    .contact-form input,
+    .contact-form textarea{
+      width:100%;
+      padding:1rem;
+      border-radius:12px;
+      border:1px solid #d1d5db;
+      font-size:.95rem;
+      outline:none;
+      box-sizing:border-box;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus{
+      border-color:#2563eb;
+      box-shadow:0 0 0 3px rgba(37,99,235,.15);
+    }
+
+    .contact-form textarea{
+      min-height:150px;
+      resize:vertical;
+    }
+
+    .submit-btn{
+      background:linear-gradient(135deg,#002060,#1a3a7a);
+      color:white;
+      border:none;
+      padding:1rem;
+      border-radius:14px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.3s;
+      font-size:1rem;
+    }
+
+    .submit-btn:hover{
+      opacity:.92;
+      transform:translateY(-2px);
+    }
+
+    .branch-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:1.5rem;
+    }
+
+    .branch-card{
+      background:white;
+      border-radius:20px;
+      padding:1.5rem;
+      border:1px solid var(--border);
+      box-shadow:0 4px 20px rgba(0,0,0,.05);
+      transition:.3s;
+    }
+
+    .branch-card:hover{
+      transform:translateY(-5px);
+    }
+
+    .branch-card h3{
+      color:var(--primary);
+      margin-top:0;
+      margin-bottom:1rem;
+    }
+
+    .branch-card p{
+      margin:.5rem 0;
+      line-height:1.7;
+      font-size:.92rem;
+    }
+
+    .social-box{
+      margin-top:2rem;
+      background:linear-gradient(135deg,#002060,#1a3a7a);
+      color:white;
+      border-radius:22px;
+      padding:2rem;
+      text-align:center;
+    }
+
+    .social-box a{
+      color:#fbbf24;
+      text-decoration:none;
+      font-weight:bold;
+    }
+
+    footer{
+      text-align:center;
+      padding:1.5rem;
+      background:#001a4d;
+      color:white;
+      margin-top:3rem;
+    }
+
+    @media(max-width:1000px){
+
+      .contact-layout{
+        grid-template-columns:1fr;
+      }
+
+      .quick-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .branch-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:600px){
+
+      .hero-contact h1{
+        font-size:2rem;
+      }
+
+      .quick-grid{
+        grid-template-columns:1fr;
+      }
+
+      .office-table{
+        display:block;
+        overflow-x:auto;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+
+  <button class="menu-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+ <a href="connection-guide.html"> 📋 Connection Guide</a>
+       <a href="new-connection.html">🔌 Apply  Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<div class="contact-page">
+
+  <!-- HERO -->
+  <section class="hero-contact">
+    <h1>📞 Contact Us</h1>
+
+    <p>
+      Reach out to NORECO I for concerns regarding billing,
+      power interruptions, permits, technical services,
+      and customer support.
+    </p>
+  </section>
+
+  <!-- QUICK INFO -->
+  <div class="quick-grid">
+
+    <div class="quick-card">
+      <div class="icon">📍</div>
+      <h3>Main Office</h3>
+      <p>Tinaogan, Bindoy, Negros Oriental</p>
+    </div>
+
+    <div class="quick-card">
+      <div class="icon">☎️</div>
+      <h3>Telephone</h3>
+      <p>(035) 402-5149</p>
+    </div>
+
+    <div class="quick-card">
+      <div class="icon">📧</div>
+      <h3>Email</h3>
+      <p>noreco1@yahoo.com</p>
+    </div>
+
+    <div class="quick-card">
+      <div class="icon">🌐</div>
+      <h3>Website</h3>
+      <p>noreco1.com</p>
+    </div>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="contact-layout">
+
+    <!-- LEFT -->
+    <div class="card">
+
+      <h2 class="section-title">🏢 Main Office Directory</h2>
+
+      <p>
+        Postal Address:
+        <strong>
+          NORECO I Main Office, Tinaogan, Bindoy,
+          Negros Oriental, 6209
+        </strong>
+      </p>
+
+      <table class="office-table">
+
+        <thead>
+          <tr>
+            <th>Office</th>
+            <th>Email Address</th>
+            <th>Telephone</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            <td>Office of the General Manager</td>
+            <td>noreco1@yahoo.com</td>
+            <td>(035) 402-5149 loc 103</td>
+          </tr>
+
+          <tr>
+            <td>Area Operations Department</td>
+            <td>areaoperationsdepartment@gmail.com</td>
+            <td>(035) 402-5149 loc 121</td>
+          </tr>
+
+          <tr>
+            <td>Corporate Planning Department</td>
+            <td>noreco1corplan@gmail.com</td>
+            <td>(035) 402-5149 loc 104, 123</td>
+          </tr>
+
+          <tr>
+            <td>Institutional Services Department</td>
+            <td>isdnoreco1@yahoo.com</td>
+            <td>(035) 402-5149 loc 108</td>
+          </tr>
+
+          <tr>
+            <td>Internal Audit Department</td>
+            <td>internalauditdepartment.noreco1@gmail.com</td>
+            <td>(035) 402-5149 loc 107</td>
+          </tr>
+
+          <tr>
+            <td>Finance Services Department</td>
+            <td>fsd_noreco1@yahoo.com</td>
+            <td>(035) 402-5149 loc 116-119</td>
+          </tr>
+
+          <tr>
+            <td>Technical Service Department</td>
+            <td>noreco1tsd1@gmail.com</td>
+            <td>(035) 402-5149 loc 114</td>
+          </tr>
+
+          <tr>
+            <td>Bids and Awards Committee</td>
+            <td>bids.noreco1@gmail.com</td>
+            <td>(035) 402-5149 loc 103</td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+
+      <h2 class="section-title">✉️ Send Us a Message</h2>
+
+      <form id="contactForm" class="contact-form">
+
+        <input type="text" id="name" placeholder="Your Full Name" required>
+
+        <input type="email" id="email" placeholder="Your Email Address" required>
+
+        <input type="text" id="subject" placeholder="Subject" required>
+
+        <textarea id="message" placeholder="Write your concern or message here..." required></textarea>
+
+        <button type="submit" class="submit-btn">
+          Send Message
+        </button>
+
+      </form>
+
+      <p id="statusMsg" style="margin-top:1rem;font-weight:600;"></p>
+
+    </div>
+
+  </div>
+
+  <!-- BRANCHES -->
+  <h2 class="section-title">⚡ Satellite Offices & Substations</h2>
+
+  <div class="branch-grid">
+
+    <div class="branch-card">
+      <h3>📍 Bindoy Main Office</h3>
+
+      <p><strong>Address:</strong> Tinaogan, Bindoy, Negros Oriental</p>
+      <p><strong>Email:</strong> noreco1@yahoo.com</p>
+      <p><strong>Telephone:</strong> (035) 402-5149</p>
+      <p>
+        5MVA Bindoy Substation serves Manjuyod,
+        Bindoy, Ayungon and Tayasan.
+      </p>
+    </div>
+
+    <div class="branch-card">
+      <h3>📍 Bais Satellite Office</h3>
+
+      <p><strong>Address:</strong> Brgy. Consolacion, Bais City</p>
+      <p><strong>Email:</strong> noreco1baiscss@gmail.com</p>
+      <p><strong>Mobile:</strong> 09154065835</p>
+      <p>15MVA Bais Substation serves Bais City.</p>
+    </div>
+
+    <div class="branch-card">
+      <h3>📍 Mabinay Satellite Office</h3>
+
+      <p><strong>Address:</strong> Brgy. Tadlong, Mabinay</p>
+      <p>3.75MVA Mabinay Substation serves Mabinay.</p>
+    </div>
+
+    <div class="branch-card">
+      <h3>📍 Guihulngan Satellite Office</h3>
+
+      <p><strong>Address:</strong> Osmeña Street, Guihulngan City</p>
+      <p><strong>Email:</strong> collectioncenter.guih@gmail.com</p>
+      <p>
+        10MVA Guihulngan Substation serves
+        Guihulngan, Jimalalud and La Libertad.
+      </p>
+    </div>
+
+    <div class="branch-card">
+      <h3>📍 Vallehermoso Substation</h3>
+
+      <p>
+        5MVA Vallehermoso Substation serves
+        Vallehermoso and portions of Canlaon and Guihulngan.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- SOCIAL -->
+  <div class="social-box">
+
+    <h2>🌐 Connect With Us</h2>
+
+    <p>
+      Facebook:
+      <strong>Negros Oriental I Electric Cooperative</strong>
+    </p>
+
+    <p>
+      <a href="https://www.facebook.com/profile.php?id=100069147744919" target="_blank">
+        Visit Our Facebook Page
+      </a>
+    </p>
+
+    <p>
+      Website:
+      <strong>noreco1.com</strong>
+    </p>
+
+  </div>
+
+</div>
+
+<footer>
+  <p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p>
+</footer>
+
+<!-- SUPABASE SCRIPT -->
+<script>
+
+  // ==============================
+  // SUPABASE CONFIG
+  // ==============================
+
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  // ==============================
+  // CONTACT FORM
+  // ==============================
+
+  const form = document.getElementById("contactForm");
+  const statusMsg = document.getElementById("statusMsg");
+
+  form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    statusMsg.innerHTML = "Sending message...";
+
+    const payload = {
+
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      subject: document.getElementById("subject").value,
+      message: document.getElementById("message").value,
+      created_at: new Date().toISOString()
+
+    };
+
+    const { error } = await supabaseClient
+      .from("contact_messages")
+      .insert([payload]);
+
+    if(error){
+
+      console.error(error);
+
+      statusMsg.style.color = "red";
+      statusMsg.innerHTML = "Failed to send message.";
+
+      return;
+    }
+
+    statusMsg.style.color = "green";
+    statusMsg.innerHTML = "Message sent successfully!";
+
+    form.reset();
+
+  });
+
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

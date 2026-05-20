@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORECO I – Admin Analytics</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+:root{
+  --adm-bg:#f0f4f8;--adm-card:#fff;--adm-border:#e2e8f0;
+  --adm-text:#1e293b;--adm-muted:#64748b;
+  --adm-blue:#2563eb;--adm-green:#10b981;
+  --adm-gold:#f59e0b;--adm-red:#ef4444;--adm-purple:#8b5cf6;
+  --adm-navy:#002060;
+}
+body{background:var(--adm-bg)!important;color:var(--adm-text);font-family:'DM Sans',sans-serif;}
+
+/* ── TOPBAR ── */
+.adm-topbar{
+  background:linear-gradient(135deg,#001540 0%,#002d7a 55%,#1a4fa8 100%);
+  padding:1.5rem 2rem;border-radius:16px;margin-bottom:1.75rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+  box-shadow:0 8px 32px rgba(0,32,96,.18);
+}
+.adm-topbar-left h2{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin:0 0 .2rem;}
+.adm-topbar-left p{font-size:.82rem;color:rgba(255,255,255,.65);margin:0;}
+.adm-live-badge{display:inline-flex;align-items:center;gap:.45rem;background:rgba(16,185,129,.18);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;font-size:.75rem;font-weight:700;padding:.3rem .85rem;border-radius:50px;margin-top:.5rem;}
+.adm-live-badge::before{content:'';width:6px;height:6px;background:#10b981;border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.adm-topbar-right{display:flex;align-items:center;gap:.85rem;}
+.adm-role-pill{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;font-size:.72rem;font-weight:800;padding:.3rem .85rem;border-radius:50px;letter-spacing:.06em;text-transform:uppercase;}
+.adm-user-pill{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:50px;padding:.35rem .85rem .35rem .5rem;}
+.adm-user-avatar{width:28px;height:28px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#001540;}
+.adm-user-name{font-size:.82rem;font-weight:600;color:#fff;}
+
+/* ── KPI GRID ── */
+.adm-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:1.75rem;}
+.adm-kpi{background:var(--adm-card);border:1px solid var(--adm-border);border-radius:14px;padding:1.25rem 1.35rem;box-shadow:0 2px 12px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:.1rem;position:relative;overflow:hidden;}
+.adm-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color,#2563eb);}
+.adm-kpi-icon{font-size:1.6rem;margin-bottom:.35rem;}
+.adm-kpi-label{font-size:.7rem;font-weight:700;color:var(--adm-muted);text-transform:uppercase;letter-spacing:.07em;}
+.adm-kpi-value{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;color:var(--adm-text);line-height:1.1;margin:.15rem 0;}
+.adm-kpi-sub{font-size:.75rem;color:var(--adm-muted);}
+.adm-kpi-trend{display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;margin-top:.3rem;}
+.adm-kpi-trend.up{background:#dcfce7;color:#166534;}
+.adm-kpi-trend.down{background:#fee2e2;color:#991b1b;}
+.adm-kpi-trend.neutral{background:#f1f5f9;color:#64748b;}
+
+/* ── CHART LAYOUT ── */
+.adm-charts-row{display:grid;gap:1.25rem;margin-bottom:1.25rem;}
+.adm-charts-row.col-2-1{grid-template-columns:2fr 1fr;}
+.adm-charts-row.col-1-1{grid-template-columns:1fr 1fr;}
+.adm-charts-row.col-3{grid-template-columns:1fr 1fr 1fr;}
+.adm-chart-card{background:var(--adm-card);border:1px solid var(--adm-border);border-radius:14px;padding:1.4rem 1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.adm-chart-card h3{font-family:'Sora',sans-serif;font-size:.93rem;font-weight:700;color:var(--adm-text);margin:0 0 .2rem;}
+.adm-chart-card p{font-size:.74rem;color:var(--adm-muted);margin:0 0 1rem;}
+.adm-chart-stats{display:flex;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap;}
+.adm-chart-stat-label{font-size:.68rem;color:var(--adm-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.adm-chart-stat-val{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:700;color:var(--adm-text);}
+
+/* ── DONUT LEGEND ── */
+.adm-legend{display:flex;flex-direction:column;gap:.4rem;margin-top:1rem;}
+.adm-legend-row{display:flex;justify-content:space-between;align-items:center;font-size:.76rem;}
+.adm-legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.adm-legend-label{color:#64748b;display:flex;align-items:center;gap:.45rem;}
+.adm-legend-val{font-weight:700;color:#475569;}
+
+/* ── STAT BARS (horizontal) ── */
+.adm-stat-bars{display:flex;flex-direction:column;gap:.75rem;}
+.adm-stat-bar-row{display:flex;flex-direction:column;gap:.25rem;}
+.adm-stat-bar-top{display:flex;justify-content:space-between;font-size:.76rem;}
+.adm-stat-bar-label{color:#64748b;font-weight:600;}
+.adm-stat-bar-count{color:#475569;font-weight:700;}
+.adm-stat-bar-track{height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden;}
+.adm-stat-bar-fill{height:100%;border-radius:999px;transition:.6s ease;}
+
+/* ── TABLES ── */
+.adm-table-wrap{background:var(--adm-card);border:1px solid var(--adm-border);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05);margin-bottom:1.25rem;}
+.adm-table-head{padding:1rem 1.5rem;border-bottom:1px solid var(--adm-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
+.adm-table-head h3{font-family:'Sora',sans-serif;font-size:.93rem;color:var(--adm-text);margin:0;}
+.adm-table-count{font-size:.76rem;color:var(--adm-muted);}
+.adm-table-wrap table{width:100%;border-collapse:collapse;min-width:500px;}
+.adm-table-wrap thead tr{background:#f8fafc;}
+.adm-table-wrap th{color:var(--adm-muted);padding:.65rem 1rem;text-align:left;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--adm-border);}
+.adm-table-wrap td{padding:.7rem 1rem;font-size:.82rem;color:var(--adm-text);border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.adm-table-wrap tr:last-child td{border-bottom:none;}
+.adm-table-wrap tbody tr:hover td{background:#f8fafc;}
+
+/* ── BADGES ── */
+.abadge{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.abadge.approved{background:#dcfce7;color:#166534;}
+.abadge.rejected{background:#fee2e2;color:#991b1b;}
+.abadge.pending{background:#fef9c3;color:#854d0e;}
+.abadge.review{background:#eff6ff;color:#1d4ed8;}
+
+/* ── REPORT GEN ── */
+.adm-report-card{background:var(--adm-card);border:1px solid var(--adm-border);border-radius:14px;padding:1.4rem 1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.05);margin-bottom:1.25rem;}
+.adm-report-card h3{font-family:'Sora',sans-serif;font-size:.93rem;margin:0 0 .2rem;}
+.adm-report-card p{font-size:.76rem;color:var(--adm-muted);margin:0 0 1rem;}
+.adm-report-bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:.85rem;align-items:end;}
+.adm-report-bar .form-group{margin-bottom:0;}
+.adm-report-preview{margin-top:1rem;background:#f8fafc;border:1px solid var(--adm-border);border-radius:10px;padding:1rem 1.25rem;font-family:monospace;font-size:.78rem;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:var(--adm-text);}
+
+/* ── ACCESS DENIED ── */
+.access-denied{text-align:center;padding:5rem 2rem;}
+.access-denied h2{font-family:'Sora',sans-serif;font-size:1.5rem;margin-bottom:.5rem;}
+
+@media(max-width:1000px){
+  .adm-charts-row.col-2-1,.adm-charts-row.col-3,.adm-charts-row.col-1-1{grid-template-columns:1fr;}
+  .adm-report-bar{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .adm-topbar{padding:1.25rem;}
+  .adm-topbar-left h2{font-size:1.2rem;}
+  .adm-report-bar{grid-template-columns:1fr;}
+}
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="assets/noreco-logo.jpeg" alt="NORECO I">
+    <h2>NORECO <span>I</span></h2>
+  </a>
+  <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="about.html">🏛️ About</a>
+    <a href="contact.html">📞 Contact</a>
+    <a href="interruption.html">⚡ Outages</a>
+    <a href="report.html">⚠️ Report</a>
+    <a href="connection-guide.html">📋 Connection Guide</a>
+    <a href="new-connection.html">🔌 Apply Connection</a>
+    <a href="bills.html">💡 Bills</a>
+    <a href="seminar.html">📅 Seminars</a>
+    <a href="faq.html">❓ FAQ</a>
+    <a id="dashLink" href="dashboard.html" style="display:none">📊 Dashboard</a>
+    <a id="adminLink" href="admin.html" style="display:none">🛡️ Admin</a>
+    <a href="login.html" class="btn btn-gold" style="margin-left:.5rem" id="loginNavBtn">Login</a>
+  </nav>
+</header>
+
+<!-- ACCESS DENIED -->
+<div class="page-wrap" id="accessDenied" style="display:none;">
+  <div class="access-denied">
+    <div style="font-size:4rem;margin-bottom:1rem;">🚫</div>
+    <h2>Admin Access Only</h2>
+    <p style="color:#64748b;">This panel is restricted to administrators.</p>
+    <a href="login.html" class="btn btn-blue" style="margin-top:1.25rem;display:inline-block;">Go to Login</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="page-wrap" id="mainContent" style="display:none;">
+
+  <!-- Topbar -->
+  <div class="adm-topbar">
+    <div class="adm-topbar-left">
+      <h2>🛡️ Admin Analytics Panel</h2>
+      <p id="dashDate">—</p>
+      <div class="adm-live-badge">● Real-time data</div>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-role-pill">Admin</span>
+      <div class="adm-user-pill">
+        <div class="adm-user-avatar" id="adminInitial">A</div>
+        <span class="adm-user-name" id="adminName">Admin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="adm-kpi-grid">
+    <div class="adm-kpi" style="--kpi-color:#2563eb;">
+      <div class="adm-kpi-icon">💰</div>
+      <div class="adm-kpi-label">Total Revenue</div>
+      <div class="adm-kpi-value" id="kpiRevenue">₱0</div>
+      <div class="adm-kpi-sub" id="kpiRevenueSub">0 payments</div>
+    </div>
+    <div class="adm-kpi" style="--kpi-color:#10b981;">
+      <div class="adm-kpi-icon">💡</div>
+      <div class="adm-kpi-label">Bills Paid</div>
+      <div class="adm-kpi-value" id="kpiBillsPaid">0</div>
+      <div class="adm-kpi-sub" id="kpiBillsPaidSub">0 pending</div>
+    </div>
+    <div class="adm-kpi" style="--kpi-color:#ef4444;">
+      <div class="adm-kpi-icon">⚠️</div>
+      <div class="adm-kpi-label">Service Reports</div>
+      <div class="adm-kpi-value" id="kpiReports">0</div>
+      <div class="adm-kpi-sub" id="kpiReportsSub">0 completed</div>
+    </div>
+    <div class="adm-kpi" style="--kpi-color:#f59e0b;">
+      <div class="adm-kpi-icon">⭐</div>
+      <div class="adm-kpi-label">Avg. Technician Rating</div>
+      <div class="adm-kpi-value" id="kpiRating">—</div>
+      <div class="adm-kpi-sub" id="kpiRatingSub">0 ratings</div>
+    </div>
+    <div class="adm-kpi" style="--kpi-color:#8b5cf6;">
+      <div class="adm-kpi-icon">🔌</div>
+      <div class="adm-kpi-label">New Connections</div>
+      <div class="adm-kpi-value" id="kpiConns">0</div>
+      <div class="adm-kpi-sub" id="kpiConnsSub">total applications</div>
+    </div>
+    <div class="adm-kpi" style="--kpi-color:#06b6d4;">
+      <div class="adm-kpi-icon">📅</div>
+      <div class="adm-kpi-label">Seminar Registrations</div>
+      <div class="adm-kpi-value" id="kpiSeminars">0</div>
+      <div class="adm-kpi-sub">total registered</div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Revenue line (wide) + Report types donut -->
+  <div class="adm-charts-row col-2-1">
+
+    <div class="adm-chart-card">
+      <h3>💹 Revenue Trend</h3>
+      <p>Monthly payment collection over time</p>
+      <div class="adm-chart-stats">
+        <div>
+          <div class="adm-chart-stat-label">Total Collected</div>
+          <div class="adm-chart-stat-val" id="chartTotalRevenue">₱0</div>
+        </div>
+        <div>
+          <div class="adm-chart-stat-label">Transactions</div>
+          <div class="adm-chart-stat-val" id="chartTotalTx">0</div>
+        </div>
+        <div>
+          <div class="adm-chart-stat-label">Avg per Transaction</div>
+          <div class="adm-chart-stat-val" id="chartAvgTx">₱0</div>
+        </div>
+      </div>
+      <canvas id="revenueChart" height="100"></canvas>
+    </div>
+
+    <div class="adm-chart-card">
+      <h3>🔍 Report Type Breakdown</h3>
+      <p>Distribution of service requests by type</p>
+      <canvas id="donutChart"></canvas>
+      <div class="adm-legend" id="donutLegend"></div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row 2: Monthly bar + Permit status + Rating bar -->
+  <div class="adm-charts-row col-3">
+
+    <div class="adm-chart-card">
+      <h3>📊 Monthly Activity</h3>
+      <p>Reports vs Connections — last 6 months</p>
+      <canvas id="barChart" height="150"></canvas>
+    </div>
+
+    <div class="adm-chart-card">
+      <h3>💡 Bill Payment Status</h3>
+      <p>Breakdown of all bills by payment status</p>
+      <canvas id="billStatusChart"></canvas>
+      <div class="adm-legend" id="billStatusLegend"></div>
+    </div>
+
+    <div class="adm-chart-card">
+      <h3>⭐ Rating Distribution</h3>
+      <p>Technician ratings submitted by residents</p>
+      <div class="adm-stat-bars" id="ratingBars">
+        <div style="text-align:center;padding:1rem;color:#94a3b8;font-size:.82rem;">No ratings yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row 3: Connection mode pie + Urgency distribution -->
+  <div class="adm-charts-row col-1-1">
+
+    <div class="adm-chart-card">
+      <h3>🔌 Connection Mode Split</h3>
+      <p>Self-Service vs Assisted Processing applications</p>
+      <canvas id="connModeChart" height="140"></canvas>
+      <div class="adm-legend" id="connModeLegend"></div>
+    </div>
+
+    <div class="adm-chart-card">
+      <h3>🚨 Report Urgency Levels</h3>
+      <p>Breakdown of service requests by urgency</p>
+      <div class="adm-stat-bars" id="urgencyBars">
+        <div style="text-align:center;padding:1rem;color:#94a3b8;font-size:.82rem;">No reports yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Report Generator -->
+  <div class="adm-report-card">
+    <h3>📥 Generate System Report</h3>
+    <p>Select report type and optional date range to export a detailed report.</p>
+    <div class="adm-report-bar">
+      <div class="form-group">
+        <label>Report Type *</label>
+        <select id="reportType">
+          <option value="all">All Services (Full Report)</option>
+          <option value="billing">Billing & Payments</option>
+          <option value="bills">Bills Detail</option>
+          <option value="reports">Service Requests</option>
+          <option value="seminars">Seminar Registrations</option>
+          <option value="ratings">Technician Ratings</option>
+          <option value="connections">New Connections</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" id="dateFrom">
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" id="dateTo">
+      </div>
+      <div class="form-group">
+        <button class="btn btn-blue" onclick="generateReport()" id="genBtn" style="width:100%;justify-content:center;">📥 Generate</button>
+      </div>
+    </div>
+    <div class="adm-report-preview" id="reportPreviewContent" style="display:none;"></div>
+    <div id="reportPreviewWrap" style="display:none;margin-top:.75rem;">
+      <button class="btn btn-green" onclick="downloadReport()">⬇ Download .txt</button>
+    </div>
+  </div>
+
+  <!-- Bills Table -->
+  <div class="adm-table-wrap">
+    <div class="adm-table-head">
+      <h3>💡 All Bills — Revenue Tracking</h3>
+      <span class="adm-table-count" id="billsAdminCount">0 records</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Meter SN</th><th>Resident</th><th>Bill Month</th><th>kWh</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Paid On</th></tr></thead>
+        <tbody id="adminBillsBody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">No bills yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- New Connections Table -->
+  <div class="adm-table-wrap">
+    <div class="adm-table-head">
+      <h3>🔌 New Connection Applications</h3>
+      <span class="adm-table-count" id="connCount">0 records</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Applicant</th><th>Email</th><th>Mode</th><th>Fee</th><th>Electrician</th><th>Status</th><th>Submitted</th></tr></thead>
+        <tbody id="adminConnsBody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No applications yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+  <!-- Service Reports Table -->
+  <div class="adm-table-wrap">
+    <div class="adm-table-head">
+      <h3>⚠️ All Service Reports</h3>
+      <span class="adm-table-count" id="reportCount">0 records</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Ref #</th><th>Type</th><th>Name</th><th>Urgency</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="adminReportsBody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;">No reports yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
+<script src="script.js"></script>
+<script type="module">
+import { db, collection, onSnapshot, query } from './firebase-config.js';
+
+// ── AUTH ─────────────────────────────────────────────────────
+const user = JSON.parse(localStorage.getItem('ecmsUser')||'null');
+if(!user||user.role!=='admin'){
+  document.getElementById('accessDenied').style.display='block';
+}else{
+  document.getElementById('mainContent').style.display='block';
+  document.getElementById('adminName').textContent=user.name||user.email;
+  document.getElementById('adminInitial').textContent=(user.name||user.email||'A')[0].toUpperCase();
+  document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+// ── CHARTS ───────────────────────────────────────────────────
+Chart.defaults.font.family='DM Sans, sans-serif';
+Chart.defaults.color='#94a3b8';
+const COLORS=['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f43f5e'];
+
+const revenueChart=new Chart(document.getElementById('revenueChart'),{
+  type:'line',
+  data:{labels:[],datasets:[{label:'₱',data:[],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.07)',borderWidth:2.5,tension:0.4,fill:true,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:'#2563eb'}]},
+  options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#f1f5f9',bodyColor:'#94a3b8',callbacks:{label:ctx=>' ₱'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{callback:v=>'₱'+v.toLocaleString(),font:{size:11}}}}}
+});
+
+const donutChart=new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{labels:[],datasets:[{data:[],backgroundColor:COLORS,borderWidth:0,hoverOffset:8}]},
+  options:{responsive:true,cutout:'70%',plugins:{legend:{display:false}}}
+});
+
+const barChart=new Chart(document.getElementById('barChart'),{
+  type:'bar',
+  data:{labels:[],datasets:[
+    {label:'Reports',data:[],backgroundColor:'rgba(37,99,235,.75)',borderRadius:5},
+    {label:'Connections',data:[],backgroundColor:'rgba(16,185,129,.75)',borderRadius:5}
+  ]},
+  options:{responsive:true,plugins:{legend:{labels:{boxWidth:11,padding:14}}},scales:{x:{grid:{display:false}},y:{ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}}}}
+});
+
+const billStatusChart=new Chart(document.getElementById('billStatusChart'),{
+  type:'doughnut',
+  data:{labels:[],datasets:[{data:[],backgroundColor:['#10b981','#ef4444','#f59e0b','#3b82f6'],borderWidth:0,hoverOffset:8}]},
+  options:{responsive:true,cutout:'66%',plugins:{legend:{display:false}}}
+});
+
+const connModeChart=new Chart(document.getElementById('connModeChart'),{
+  type:'doughnut',
+  data:{labels:['Self-Service','Assisted'],datasets:[{data:[0,0],backgroundColor:['#2563eb','#8b5cf6'],borderWidth:0,hoverOffset:8}]},
+  options:{responsive:true,cutout:'65%',plugins:{legend:{display:false}}}
+});
+
+// ── DATA ─────────────────────────────────────────────────────
+let D={payments:[],bills:[],reports:[],ratings:[],connections:[],seminars:[]};
+
+function updateAllCharts(){
+  // Revenue trend — bills paid + connection fees (approved+)
+  const grp={};
+  const approvedStatuses=['Approved','Inspection Scheduled','Connection Order','Connected','Scheduled'];
+  D.bills.filter(b=>b.status==='Paid').forEach(b=>{
+    const d=b.paidAt?.toDate?b.paidAt.toDate():b.createdAt?.toDate?b.createdAt.toDate():new Date();
+    const k=d.toLocaleDateString('en-PH',{month:'short',year:'numeric'});
+    grp[k]=(grp[k]||0)+(b.amount||0);
+  });
+  D.connections.filter(c=>approvedStatuses.includes(c.status)).forEach(c=>{
+    const d=c.createdAt?.toDate?c.createdAt.toDate():new Date();
+    const k=d.toLocaleDateString('en-PH',{month:'short',year:'numeric'});
+    grp[k]=(grp[k]||0)+(c.totalFee||0);
+  });
+  const sorted=Object.entries(grp).slice(-8);
+  revenueChart.data.labels=sorted.map(([k])=>k);
+  revenueChart.data.datasets[0].data=sorted.map(([,v])=>v);
+  revenueChart.update();
+
+  // Report type donut
+  const tc={};
+  D.reports.forEach(r=>{tc[r.type]=(tc[r.type]||0)+1;});
+  const te=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
+  donutChart.data.labels=te.map(([k])=>k);
+  donutChart.data.datasets[0].data=te.map(([,v])=>v);
+  donutChart.update();
+  const total=D.reports.length;
+  document.getElementById('donutLegend').innerHTML=te.map(([k,v],i)=>`
+    <div class="adm-legend-row">
+      <span class="adm-legend-label"><span class="adm-legend-dot" style="background:${COLORS[i%COLORS.length]};"></span>${k}</span>
+      <span class="adm-legend-val">${v} <span style="color:#94a3b8;font-weight:400;">(${total?Math.round(v/total*100):0}%)</span></span>
+    </div>`).join('');
+
+  // Monthly bar
+  const months={};
+  const now=new Date();
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months[d.toLocaleDateString('en-PH',{month:'short',year:'2-digit'})]={r:0,p:0};
+  }
+  D.reports.forEach(r=>{const d=r.createdAt?.toDate?r.createdAt.toDate():new Date();const k=d.toLocaleDateString('en-PH',{month:'short',year:'2-digit'});if(months[k])months[k].r++;});
+  D.connections.forEach(co=>{const d=co.createdAt?.toDate?co.createdAt.toDate():new Date();const k=d.toLocaleDateString('en-PH',{month:'short',year:'2-digit'});if(months[k])months[k].p++;});
+  const mKeys=Object.keys(months);
+  barChart.data.labels=mKeys;
+  barChart.data.datasets[0].data=mKeys.map(k=>months[k].r);
+  barChart.data.datasets[1].data=mKeys.map(k=>months[k].p);
+  barChart.update();
+
+  // Bill status donut
+  const bs={'Paid':0,'Pending':0,'Overdue':0,'Disputed':0};
+  D.bills.forEach(b=>{if(bs[b.status]!==undefined)bs[b.status]++;else bs['Pending']++;});
+  const bse=Object.entries(bs).filter(([,v])=>v>0);
+  billStatusChart.data.labels=bse.map(([k])=>k);
+  billStatusChart.data.datasets[0].data=bse.map(([,v])=>v);
+  billStatusChart.update();
+  const bsColors=['#10b981','#f59e0b','#ef4444','#8b5cf6'];
+  document.getElementById('billStatusLegend').innerHTML=bse.map(([k,v],i)=>`
+    <div class="adm-legend-row">
+      <span class="adm-legend-label"><span class="adm-legend-dot" style="background:${bsColors[i]};"></span>${k}</span>
+      <span class="adm-legend-val">${v}</span>
+    </div>`).join('');
+
+  // Connection mode
+  const self=D.connections.filter(c=>c.processingMode==='self'||!c.processingMode).length;
+  const assisted=D.connections.filter(c=>c.processingMode==='assisted').length;
+  connModeChart.data.datasets[0].data=[self,assisted];
+  connModeChart.update();
+  const total2=D.connections.length||1;
+  document.getElementById('connModeLegend').innerHTML=`
+    <div class="adm-legend-row"><span class="adm-legend-label"><span class="adm-legend-dot" style="background:#2563eb;"></span>Self-Service</span><span class="adm-legend-val">${self} (${Math.round(self/total2*100)}%)</span></div>
+    <div class="adm-legend-row"><span class="adm-legend-label"><span class="adm-legend-dot" style="background:#8b5cf6;"></span>Assisted</span><span class="adm-legend-val">${assisted} (${Math.round(assisted/total2*100)}%)</span></div>`;
+
+  // Rating bars
+  const ratingCounts={5:0,4:0,3:0,2:0,1:0};
+  D.ratings.forEach(r=>{const v=Math.round(r.rating||0);if(ratingCounts[v]!==undefined)ratingCounts[v]++;});
+  const maxR=Math.max(...Object.values(ratingCounts),1);
+  const rColors={5:'#10b981',4:'#22c55e',3:'#f59e0b',2:'#f97316',1:'#ef4444'};
+  document.getElementById('ratingBars').innerHTML=D.ratings.length?[5,4,3,2,1].map(star=>`
+    <div class="adm-stat-bar-row">
+      <div class="adm-stat-bar-top">
+        <span class="adm-stat-bar-label">${star} ★</span>
+        <span class="adm-stat-bar-count">${ratingCounts[star]}</span>
+      </div>
+      <div class="adm-stat-bar-track">
+        <div class="adm-stat-bar-fill" style="width:${Math.round(ratingCounts[star]/maxR*100)}%;background:${rColors[star]};"></div>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:1rem;color:#94a3b8;font-size:.82rem;">No ratings yet.</div>';
+
+  // Urgency bars
+  const urg={Critical:0,High:0,Medium:0,Low:0};
+  D.reports.forEach(r=>{if(urg[r.urgency]!==undefined)urg[r.urgency]++;});
+  const maxU=Math.max(...Object.values(urg),1);
+  const urgColors={Critical:'#ef4444',High:'#f97316',Medium:'#f59e0b',Low:'#10b981'};
+  document.getElementById('urgencyBars').innerHTML=D.reports.length?Object.entries(urg).map(([k,v])=>`
+    <div class="adm-stat-bar-row">
+      <div class="adm-stat-bar-top">
+        <span class="adm-stat-bar-label">${k}</span>
+        <span class="adm-stat-bar-count">${v}</span>
+      </div>
+      <div class="adm-stat-bar-track">
+        <div class="adm-stat-bar-fill" style="width:${Math.round(v/maxU*100)}%;background:${urgColors[k]};"></div>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:1rem;color:#94a3b8;font-size:.82rem;">No reports yet.</div>';
+}
+
+// ── LISTENERS ─────────────────────────────────────────────────
+// Revenue is computed inside updateRevenue(), called by both bills + connections listeners
+function updateRevenue(){
+  const approvedStatuses=['Approved','Inspection Scheduled','Connection Order','Connected','Scheduled'];
+  const billsRevenue=D.bills.filter(b=>b.status==='Paid').reduce((s,b)=>s+(b.amount||0),0);
+  const connRevenue=D.connections.filter(co=>approvedStatuses.includes(co.status)).reduce((s,co)=>s+(co.totalFee||0),0);
+  const total=billsRevenue+connRevenue;
+  const billsPaidCount=D.bills.filter(b=>b.status==='Paid').length;
+  const connApprovedCount=D.connections.filter(co=>approvedStatuses.includes(co.status)).length;
+  const txCount=billsPaidCount+connApprovedCount;
+  const avg=txCount?Math.round(total/txCount):0;
+  document.getElementById('kpiRevenue').textContent='₱'+total.toLocaleString();
+  document.getElementById('kpiRevenueSub').textContent='Bills ₱'+billsRevenue.toLocaleString()+' + Connections ₱'+connRevenue.toLocaleString();
+  document.getElementById('chartTotalRevenue').textContent='₱'+total.toLocaleString();
+  document.getElementById('chartTotalTx').textContent=txCount;
+  document.getElementById('chartAvgTx').textContent='₱'+avg.toLocaleString();
+}
+
+onSnapshot(query(collection(db,'bills')),snap=>{
+  D.bills=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const paid=D.bills.filter(b=>b.status==='Paid').length;
+  const pending=D.bills.filter(b=>b.status!=='Paid').length;
+  document.getElementById('kpiBillsPaid').textContent=paid;
+  document.getElementById('kpiBillsPaidSub').textContent=pending+' pending';
+  // Render bills table
+  document.getElementById('billsAdminCount').textContent=snap.size+' records';
+  document.getElementById('adminBillsBody').innerHTML=D.bills
+    .slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))
+    .map(b=>{
+      const date=b.createdAt?.toDate?b.createdAt.toDate().toLocaleDateString('en-PH'):'—';
+      const paidDate=b.paidAt?.toDate?b.paidAt.toDate().toLocaleDateString('en-PH'):'—';
+      const isPaid=b.status==='Paid';
+      const cls=isPaid?'approved':b.status==='Overdue'?'rejected':'pending';
+      return `<tr>
+        <td style="font-family:monospace;font-weight:700;color:#2563eb;">${b.meterSN||'—'}</td>
+        <td>${b.residentName||'—'}</td>
+        <td style="font-size:.79rem;">${b.billMonth||b.period||'—'}</td>
+        <td style="font-size:.79rem;">${b.kwh||'—'} kWh</td>
+        <td style="font-weight:700;color:${isPaid?'#15803d':'#002060'};">₱${Number(b.amount||0).toLocaleString()}</td>
+        <td style="font-size:.79rem;">${b.dueDate||'—'}</td>
+        <td><span class="abadge ${cls}">${b.status||'Pending'}</span></td>
+        <td style="font-size:.79rem;color:#64748b;">${isPaid?paidDate:'—'}</td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">No bills yet.</td></tr>';
+  updateRevenue();
+  updateAllCharts();
+});
+
+onSnapshot(query(collection(db,'reports')),snap=>{
+  D.reports=snap.docs.map(d=>d.data());
+  const done=D.reports.filter(r=>r.status==='Completed').length;
+  document.getElementById('kpiReports').textContent=snap.size;
+  document.getElementById('kpiReportsSub').textContent=done+' completed';
+  document.getElementById('reportCount').textContent=snap.size+' records';
+  document.getElementById('adminReportsBody').innerHTML=snap.docs.map(d=>{
+    const r=d.data();const date=r.createdAt?.toDate?r.createdAt.toDate().toLocaleDateString('en-PH'):'—';
+    const ucls=r.urgency==='Critical'?'rejected':r.urgency==='High'?'pending':'review';
+    const scls=r.status==='Completed'?'approved':r.status==='In Progress'?'review':'pending';
+    return `<tr><td><strong>${r.refNum||'—'}</strong></td><td>${r.type||'—'}</td><td>${r.name||'—'}</td><td><span class="abadge ${ucls}">${r.urgency||'—'}</span></td><td><span class="abadge ${scls}">${r.status||'—'}</span></td><td>${date}</td></tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;">No reports yet.</td></tr>';
+  updateAllCharts();
+});
+
+onSnapshot(query(collection(db,'ratings')),snap=>{
+  D.ratings=snap.docs.map(d=>d.data());
+  const avg=D.ratings.length?D.ratings.reduce((s,r)=>s+(r.rating||0),0)/D.ratings.length:null;
+  document.getElementById('kpiRating').textContent=avg?avg.toFixed(1)+' ★':'—';
+  document.getElementById('kpiRatingSub').textContent=D.ratings.length+' ratings';
+  updateAllCharts();
+});
+
+onSnapshot(query(collection(db,'new_connections')),snap=>{
+  D.connections=snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('kpiConns').textContent=snap.size;
+  document.getElementById('kpiConnsSub').textContent=snap.size+' total applications';
+  document.getElementById('connCount').textContent=snap.size+' records';
+  document.getElementById('adminConnsBody').innerHTML=snap.docs.map(d=>{
+    const c=d.data();const date=c.createdAt?.toDate?c.createdAt.toDate().toLocaleDateString('en-PH'):'—';
+    const approvedStatuses=['Approved','Inspection Scheduled','Connection Order','Connected','Scheduled'];
+    const isRevenue=approvedStatuses.includes(c.status);
+    const scls=isRevenue?'approved':c.status==='Rejected'?'rejected':'pending';
+    return `<tr><td><strong>${c.applicantName||c.name||'—'}</strong></td><td style="font-size:.77rem;color:#64748b;">${c.email||'—'}</td><td>${c.processingMode==='assisted'?'🏢 Assisted':'🛠️ Self-Service'}</td><td style="font-weight:700;color:${isRevenue?'#15803d':'#002060'};">₱${Number(c.totalFee||0).toLocaleString()}${isRevenue?' <span style="font-size:.68rem;background:#dcfce7;color:#166534;padding:.1rem .4rem;border-radius:4px;">✓ Revenue</span>':''}</td><td style="font-size:.79rem;">${c.electricianName||'—'}</td><td><span class="abadge ${scls}">${c.status||'pending'}</span></td><td>${date}</td></tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No applications yet.</td></tr>';
+  updateRevenue();
+  updateAllCharts();
+});
+
+onSnapshot(query(collection(db,'seminar_registrations')),snap=>{
+  D.seminars=snap.docs.map(d=>d.data());
+  document.getElementById('kpiSeminars').textContent=snap.size;
+});
+
+// ── REPORT GENERATION ─────────────────────────────────────────
+let reportText='';
+window.generateReport=async()=>{
+  const type=document.getElementById('reportType').value;
+  const from=document.getElementById('dateFrom').value;
+  const to=document.getElementById('dateTo').value;
+  const btn=document.getElementById('genBtn');
+  btn.textContent='Generating…';btn.disabled=true;
+  const now=new Date().toLocaleString('en-PH');
+  let lines=['========================================','  NORECO I ElectService — System Report','========================================',`Generated : ${now}`,`Report    : ${type.toUpperCase()}`,`Date Range: ${from||'All'} → ${to||'All'}`,''];
+  if(type==='all'||type==='billing'){const approvedStatuses=['Approved','Inspection Scheduled','Connection Order','Connected','Scheduled'];const bRev=D.bills.filter(b=>b.status==='Paid').reduce((s,b)=>s+(b.amount||0),0);const cRev=D.connections.filter(co=>approvedStatuses.includes(co.status)).reduce((s,co)=>s+(co.totalFee||0),0);lines.push('── BILLING & PAYMENTS ──────────────────',`Bills Paid Revenue: ₱${bRev.toLocaleString()}`,`Connection Fees Revenue: ₱${cRev.toLocaleString()}`,`Total Revenue: ₱${(bRev+cRev).toLocaleString()}`,'');lines.push('');}
+  if(type==='all'||type==='bills'){const d=D.bills;const paid=d.filter(b=>b.status==='Paid').length;const rev=d.filter(b=>b.status==='Paid').reduce((s,b)=>s+(b.amount||0),0);lines.push('── BILLS & PAYMENTS ────────────────────',`Total: ${d.length} | Paid: ${paid} | Revenue: ₱${rev.toLocaleString()}`,'');d.forEach(b=>lines.push(`  ${b.meterSN||'—'} | ${b.billMonth||b.period||'—'} | ₱${b.amount||0} | ${b.status||'—'}`));lines.push('');}
+  if(type==='all'||type==='reports'){const d=D.reports;const done=d.filter(r=>r.status==='Completed').length;lines.push('── SERVICE REQUESTS ────────────────────',`Total: ${d.length} | Completed: ${done}`,'');d.forEach(r=>lines.push(`  ${r.refNum||'—'} | ${r.type||'—'} | ${r.urgency||'—'} | ${r.status||'—'}`));lines.push('');}
+  if(type==='all'||type==='seminars'){const d=D.seminars;lines.push('── SEMINAR REGISTRATIONS ───────────────',`Total: ${d.length}`,'');d.forEach(s=>lines.push(`  ${s.name||'—'} | ${s.title||'—'} | ${s.date||'—'}`));lines.push('');}
+  if(type==='all'||type==='ratings'){const d=D.ratings;const avg=d.length?d.reduce((s,r)=>s+(r.rating||0),0)/d.length:0;lines.push('── TECHNICIAN RATINGS ──────────────────',`Total: ${d.length} | Average: ${avg.toFixed(1)}/5.0`,'');d.forEach(r=>lines.push(`  ${r.ref||'—'} | ${r.rating||0}★ | ${r.tech||'—'}`));lines.push('');}
+  if(type==='all'||type==='connections'){const d=D.connections;lines.push('── NEW CONNECTIONS ─────────────────────',`Total: ${d.length}`,'');d.forEach(c=>lines.push(`  ${c.applicantName||c.name||'—'} | ${c.processingMode||'—'} | ₱${c.totalFee||0} | ${c.status||'—'}`));lines.push('');}
+  lines.push('========================================','END OF REPORT');
+  reportText=lines.join('\n');
+  const el=document.getElementById('reportPreviewContent');
+  el.textContent=reportText;el.style.display='block';
+  document.getElementById('reportPreviewWrap').style.display='block';
+  btn.textContent='📥 Generate';btn.disabled=false;
+  if(typeof showToast==='function')showToast('Report generated!','success');
+};
+window.downloadReport=()=>{
+  const blob=new Blob([reportText],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='NORECO_Report_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
+};
+</script>
+</body>
+</html>
