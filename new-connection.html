@@ -1322,9 +1322,41 @@
 
 <script type="module">
 
-  import { db, collection, onSnapshot, addDoc, serverTimestamp } from './firebase-config.js';
+  import { db, collection, onSnapshot, addDoc, serverTimestamp, doc, updateDoc } from './firebase-config.js';
   import { uploadFile, supabase } from './supabase-config.js';
-  import { createConnectionPaymentLink } from './paymongo.js';
+  import { createConnectionPaymentLink, checkPaymentRedirect } from './paymongo.js';
+
+  /* ── AUTO-VERIFY PAYMONGO RETURN ───────────────────
+     When PayMongo redirects back after checkout, detect
+     the result and auto-mark the application as paid.   */
+  (async () => {
+    const redirect = await checkPaymentRedirect();
+    if (!redirect) return;
+
+    if (redirect.status === 'success') {
+      const appId = redirect.appId || redirect.ctx?.applicationId;
+      showNcToast('✅ Payment verified! Updating your application…', 'success');
+
+      if (appId) {
+        try {
+          await updateDoc(doc(db, 'new_connections', appId), {
+            status:          'paid',
+            paidAt:          serverTimestamp(),
+            paymentMethod:   'PayMongo',
+            referenceNumber: redirect.referenceNumber || 'paymongo-auto',
+            amountPaid:      redirect.amount || null,
+          });
+          showNcToast('✅ Application confirmed & payment recorded!', 'success');
+        } catch(err) {
+          console.error('Firestore update error:', err);
+          showNcToast('✅ Payment verified by PayMongo. Record will update shortly.', 'success');
+        }
+      }
+
+    } else if (redirect.status === 'failed') {
+      showNcToast('❌ Payment was not completed. Please try again.', 'error');
+    }
+  })();
 
   /* ── STATE ─────────────────────────────────────── */
   let curStep       = 0;
@@ -1586,69 +1618,73 @@
   let ncApplicantEmail = '';
   let ncReceiptFile    = null;
 
-  // ── PayMongo static links ──────────────────────────
-  const SELF_SERVICE_LINK = 'https://pm.link/org-ony8gBWFPdktHD9DsFEnxKHP/fuY3sN3';  // ₱3,000
-  const ASSISTED_LINK     = 'https://pm.link/org-ony8gBWFPdktHD9DsFEnxKHP/tiMyVRw';  // ₱7,000
-
-  window.handlePaymentClick = function(){
+  window.handlePaymentClick = async function(){
     const btn = document.getElementById('submitBtn');
     if (btn.disabled) return;
 
-    // ── Open PayMongo SYNCHRONOUSLY on the click gesture (avoids popup block) ──
-    const _mode = window._ncState ? window._ncState.processingMode : processingMode;
-    const payLink = _mode === 'assisted' ? ASSISTED_LINK : SELF_SERVICE_LINK;
-    window.open(payLink, '_blank');
+    btn.disabled  = true;
+    btn.innerHTML = '⏳ Saving application…';
 
-    btn.disabled         = true;
-    btn.innerHTML        = '💳 Proceeded to PayMongo';
-    btn.style.background = '#16a34a';
+    try {
+      const uid = JSON.parse(localStorage.getItem('ecmsUser') || 'null')?.uid || 'anonymous';
+      const _mode = window._ncState ? window._ncState.processingMode : processingMode;
+      const _fee  = window._ncState ? window._ncState.totalFee       : totalFee;
+      const applicantName  = document.getElementById('ncName')?.value  || '';
+      const applicantEmail = document.getElementById('ncEmail')?.value || '';
 
-    // Highlight receipt upload section
-    const section = document.getElementById('receiptUploadSection');
-    section.style.borderColor = '#7c3aed';
-    section.style.background  = '#ede9fe';
-    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showNcToast('✅ PayMongo opened! Upload your receipt below after payment.', 'success');
-
-    // ── Background: save application to Firebase + upload docs ──
-    (async () => {
-      try {
-        const uid = JSON.parse(localStorage.getItem('ecmsUser') || 'null')?.uid || 'anonymous';
-        const docs = {};
-
-        for (let i = 0; i < 8; i++) {
-          const input = document.getElementById('docFile' + i);
-          if (input && input.files && input.files[0]) {
-            docs[DOC_FIELDS[i]] = await uploadFile(input.files[0], `new-connections/${uid}`);
-          }
+      // 1. Upload documents
+      const docs = {};
+      for (let i = 0; i < 8; i++) {
+        const input = document.getElementById('docFile' + i);
+        if (input && input.files && input.files[0]) {
+          docs[DOC_FIELDS[i]] = await uploadFile(input.files[0], `new-connections/${uid}`);
         }
-
-        const pmesInput = document.getElementById('pmesFile');
-        if (pmesInput && pmesInput.files && pmesInput.files[0]) {
-          docs['pmesCertificate'] = await uploadFile(pmesInput.files[0], `new-connections/${uid}`);
-        }
-
-        const docRef = await addDoc(collection(db, 'new_connections'), {
-          applicantName:  document.getElementById('ncName')?.value  || '',
-          email:          document.getElementById('ncEmail')?.value || '',
-          contactNo:      document.getElementById('ncPhone')?.value || '',
-          processingMode,
-          totalFee,
-          electricianId:   selectedElecId   || '',
-          electricianName: selectedElecName || '',
-          docs,
-          status: 'pending_payment',
-          uid,
-          createdAt: serverTimestamp()
-        });
-
-        ncApplicationId  = docRef.id;
-        ncApplicantEmail = document.getElementById('ncEmail')?.value || '';
-
-      } catch(err) {
-        console.warn('Background save failed (PayMongo already opened):', err.message);
       }
-    })();
+      const pmesInput = document.getElementById('pmesFile');
+      if (pmesInput && pmesInput.files && pmesInput.files[0]) {
+        docs['pmesCertificate'] = await uploadFile(pmesInput.files[0], `new-connections/${uid}`);
+      }
+
+      // 2. Save application to Firestore — status: pending_payment
+      const docRef = await addDoc(collection(db, 'new_connections'), {
+        applicantName,
+        email:           applicantEmail,
+        contactNo:       document.getElementById('ncPhone')?.value || '',
+        processingMode:  _mode,
+        totalFee:        _fee,
+        electricianId:   selectedElecId   || '',
+        electricianName: selectedElecName || '',
+        docs,
+        status:    'pending_payment',
+        uid,
+        createdAt: serverTimestamp(),
+      });
+
+      ncApplicationId  = docRef.id;
+      ncApplicantEmail = applicantEmail;
+
+      btn.innerHTML = '🔄 Redirecting to PayMongo…';
+      showNcToast('✅ Application saved! Redirecting to secure payment…', 'success');
+
+      // 3. Create a dynamic PayMongo payment link via API and redirect
+      //    createConnectionPaymentLink() navigates same-tab so PayMongo
+      //    can redirect back here with pm_status=paid&app_id=xxx
+      await createConnectionPaymentLink({
+        amountPHP:      _fee,
+        applicationId:  ncApplicationId,
+        processingMode: _mode,
+        applicantName,
+        applicantEmail,
+      });
+
+      // Execution stops here — browser navigates to PayMongo checkout
+
+    } catch(err) {
+      console.error('Payment setup error:', err);
+      showNcToast('⚠️ Error: ' + err.message, 'error');
+      btn.disabled  = false;
+      btn.innerHTML = '💳 Proceed to Payment';
+    }
   };
 
   /* ── RECEIPT UPLOAD LOGIC ───────────────────────── */

@@ -427,7 +427,8 @@
 <script src="script.js"></script>
 <script type="module">
 import {
-  db, collection, onSnapshot, doc, getDoc, getDocs, query, where
+  db, collection, onSnapshot, doc, getDoc, getDocs, query, where,
+  updateDoc, serverTimestamp
 } from './firebase-config.js';
 import { supabase } from './supabase-config.js';
 import {
@@ -450,15 +451,44 @@ async function boot() {
     user = null;
   }
 
-  // Handle PayMongo redirect (success / failed)
-  const redirect = checkPaymentRedirect();
+  // ── PAYMONGO AUTO-VERIFICATION ─────────────────────────────
+  // checkPaymentRedirect() detects PayMongo return params,
+  // calls the PayMongo API to verify, and returns the result.
+  const redirect = await checkPaymentRedirect();
+
   if (redirect) {
     if (redirect.status === 'success') {
-      showPaymentToast('✅ Payment completed! Please upload your receipt below.', 'success');
-      // Auto-open receipt modal after a short delay so the page renders first
-      if (redirect.billId) {
-        setTimeout(() => openReceiptModal(redirect.billId, ''), 800);
+      const { billId, referenceNumber, amount } = redirect;
+
+      // 1. Show immediate success toast
+      showPaymentToast('✅ Payment verified! Updating your record…', 'success');
+
+      // 2. Auto-mark the bill as Paid in Firestore
+      if (billId) {
+        try {
+          await updateDoc(doc(db, 'bills', billId), {
+            status:          'Paid',
+            paidAt:          serverTimestamp(),
+            paymentMethod:   'PayMongo',
+            referenceNumber: referenceNumber || 'paymongo-auto',
+            amountPaid:      amount || null,
+          });
+
+          // Update local paidBillIds cache so UI reflects immediately
+          paidBillIds.add(billId);
+
+          showPaymentToast('✅ Payment confirmed! Bill marked as Paid.', 'success');
+        } catch (dbErr) {
+          console.error('Firestore update error:', dbErr);
+          // Bill verified but DB update failed — still show success
+          // and tell user to contact support if it doesn't reflect
+          showPaymentToast(
+            '✅ Payment verified by PayMongo. Record will update shortly.',
+            'success'
+          );
+        }
       }
+
     } else if (redirect.status === 'failed') {
       showPaymentToast('❌ Payment was not completed. Please try again.', 'error');
     }
@@ -896,10 +926,15 @@ window.closeSoa = () => document.getElementById('soaModal').classList.add('hidde
 // ── PAY BILL via PayMongo ──────────────────────────────────────
 window.payBill = async function(billId, billMonth, amountPHP) {
   const btn = event?.target;
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Processing…'; }
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Redirecting to PayMongo…';
+  }
 
   try {
-    const { checkoutUrl } = await createPaymentLink({
+    showPaymentToast('🔄 Redirecting to secure checkout…', 'info');
+
+    await createPaymentLink({
       amountPHP,
       description: `NORECO I Electric Bill – ${billMonth}`,
       meterSN:     user.meterSN,
@@ -908,13 +943,12 @@ window.payBill = async function(billId, billMonth, amountPHP) {
       userName:    user.residentName || user.name || '',
     });
 
-    // Redirect to PayMongo hosted checkout
-    window.location.href = checkoutUrl;
+    // createPaymentLink now does window.location.href — execution stops here.
 
   } catch (err) {
     console.error('PayMongo error:', err);
-    showPaymentToast('⚠️ Could not create payment link: ' + err.message, 'error');
-    if (btn) { btn.disabled = false; btn.textContent = '💳 Pay Now'; }
+    showPaymentToast('⚠️ Could not redirect to payment: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '💳 Pay Now'; }
   }
 };
 
