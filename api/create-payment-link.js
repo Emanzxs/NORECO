@@ -11,8 +11,8 @@ export default async function handler(req, res) {
 
   const { amountPHP, description, meterSN, billId, type, applicationId, processingMode, successUrl, failedUrl } = req.body;
 
-  const amount = parseFloat(amountPHP);
-  if (!amount || amount < 20) return res.status(400).json({ error: 'Minimum payment amount is ₱20.00' });
+  const amount = 1; // 🧪 TRIAL: fixed at ₱1
+  
 
   const amountCentavos = Math.round(amount * 100);
   const remarks = type === 'connection'

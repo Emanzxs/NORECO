@@ -60,7 +60,7 @@ export async function createPaymentLink({
   userName    = '',
 } = {}) {
 
-  const amount = parseFloat(amountPHP);
+  const amount = 1; // 🧪 TRIAL: fixed at ₱1
   if (isNaN(amount) || amount <= 0) throw new Error('Invalid payment amount.');
   if (amount < 20)                  throw new Error('Minimum payment amount is ₱20.00');
 
@@ -111,7 +111,7 @@ export async function createConnectionPaymentLink({
   applicantEmail  = '',
 } = {}) {
 
-  const amount = parseFloat(amountPHP);
+  const amount = 1; // 🧪 TRIAL: fixed at ₱1
   if (isNaN(amount) || amount <= 0) throw new Error('Invalid payment amount.');
   if (amount < 20)                  throw new Error('Minimum payment amount is ₱20.00');
 
