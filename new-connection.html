@@ -377,101 +377,12 @@
       color:#991b1b;
     }
 
-    /* ── RECEIPT UPLOAD STYLES ─────────────────────── */
-    .receipt-section{
-      margin-top:1.2rem;
-      border:2px dashed #a855f7;
-      border-radius:12px;
-      padding:1.1rem 1.2rem;
-      background:#faf5ff;
+    @keyframes slideUpNc{
+      from{ transform:translateX(-50%) translateY(20px); opacity:0; }
+      to  { transform:translateX(-50%) translateY(0);    opacity:1; }
     }
-    .receipt-section-title{
-      font-size:.88rem;
-      font-weight:700;
-      color:#5b21b6;
-      margin-bottom:.4rem;
-    }
-    .receipt-section-sub{
-      font-size:.77rem;
-      color:#7c3aed;
-      margin-bottom:.9rem;
-      line-height:1.5;
-    }
-    .receipt-drop-zone-nc{
-      border:1.5px dashed #c4b5fd;
-      border-radius:10px;
-      padding:1.4rem 1rem;
-      text-align:center;
-      cursor:pointer;
-      transition:background .2s, border-color .2s;
-      background:#fff;
-    }
-    .receipt-drop-zone-nc:hover,
-    .receipt-drop-zone-nc.dragover{
-      background:#ede9fe;
-      border-color:#7c3aed;
-    }
-    .receipt-drop-zone-nc input[type="file"]{ display:none; }
-    .nc-receipt-preview{
-      width:100%;
-      max-height:160px;
-      object-fit:contain;
-      border-radius:8px;
-      margin-top:.75rem;
-      display:none;
-      border:1px solid #e5e7eb;
-    }
-    .nc-receipt-progress{
-      height:6px;
-      border-radius:999px;
-      background:#e5e7eb;
-      overflow:hidden;
-      margin-top:.75rem;
-      display:none;
-    }
-    .nc-receipt-progress-bar{
-      height:100%;
-      background:linear-gradient(90deg,#7c3aed,#a855f7);
-      width:0%;
-      transition:width .3s ease;
-    }
-    .upload-receipt-btn{
-      width:100%;
-      border:none;
-      border-radius:10px;
-      padding:.8rem;
-      background:linear-gradient(135deg,#7c3aed,#a855f7);
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:.85rem;
-      font-size:.9rem;
-      transition:opacity .2s;
-    }
-    .upload-receipt-btn:hover{ opacity:.88; }
-    .upload-receipt-btn:disabled{ opacity:.5; cursor:not-allowed; }
-    .nc-receipt-success{
-      display:none;
-      text-align:center;
-      padding:.85rem;
-      background:#f0fdf4;
-      border-radius:8px;
-      color:#166534;
-      font-weight:600;
-      margin-top:.75rem;
-      font-size:.87rem;
-    }
-    .nc-receipt-view-link{
-      display:inline-flex;
-      align-items:center;
-      gap:.4rem;
-      color:#7c3aed;
-      font-size:.8rem;
-      font-weight:600;
-      text-decoration:none;
-      margin-top:.35rem;
-    }
-    .nc-receipt-view-link:hover{ text-decoration:underline; }
+
+
     .payment-toast-nc{
       position:fixed;
       bottom:1.5rem;
@@ -486,7 +397,7 @@
       box-shadow:0 8px 32px rgba(0,0,0,.25);
       animation:slideUpNc .35s ease;
     }
-    .payment-toast-nc.success{ background:#166534; }
+    .payment-toast-nc.success{ background:#166634; }
     .payment-toast-nc.error  { background:#991b1b; }
     @keyframes slideUpNc{
       from{ transform:translateX(-50%) translateY(20px); opacity:0; }
@@ -1231,58 +1142,14 @@
                 🔒 Secured by PayMongo &nbsp;·&nbsp; GCash, Maya, Credit/Debit Card accepted
               </p>
 
-              <!-- ── RECEIPT UPLOAD SECTION ────────────────────── -->
-              <div class="receipt-section" id="receiptUploadSection">
-                <div class="receipt-section-title">📎 Already Paid? Upload Your Receipt</div>
-                <div class="receipt-section-sub">
-                  If you paid via GCash, Maya, or bank transfer, attach your payment screenshot here as proof. This will be reviewed by NORECO I staff.
-                </div>
-
-                <!-- Reference Number -->
-    <div class="ref-input-wrap">
-      <label for="receiptRefNumber">📋 Payment Reference Number *</label>
-      <input type="text" id="receiptRefNumber"
-             placeholder="e.g. GC-2026051912345 or 12-digit code"
-             autocomplete="off"
-             oninput="validateRefNumber(this)">
-      <div class="ref-hint">Enter the reference / transaction number shown on your GCash, Maya, or bank receipt.</div>
-    </div>
-
-                <div class="receipt-drop-zone-nc" id="ncReceiptDropZone"
-                     onclick="document.getElementById('ncReceiptFileInput').click()"
-                     ondragover="ncHandleDragOver(event)"
-                     ondragleave="ncHandleDragLeave(event)"
-                     ondrop="ncHandleDrop(event)">
-                  <input type="file" id="ncReceiptFileInput" accept="image/*,.pdf"
-                         onchange="ncHandleFileSelect(event)">
-                  <div id="ncReceiptDropLabel">
-                    <div style="font-size:2rem;margin-bottom:.4rem;">🖼️</div>
-                    <div style="font-weight:600;color:#5b21b6;margin-bottom:.2rem;font-size:.85rem;">Click or drag receipt here</div>
-                    <div style="font-size:.73rem;color:#94a3b8;">JPG, PNG, WEBP, PDF — max 5 MB</div>
-                  </div>
-                  <img id="ncReceiptPreview" class="nc-receipt-preview" alt="Receipt preview">
-                </div>
-
-                <div id="ncReceiptFileName" style="font-size:.76rem;color:#64748b;text-align:center;display:none;margin-top:.4rem;"></div>
-
-                <div class="nc-receipt-progress" id="ncReceiptProgress">
-                  <div class="nc-receipt-progress-bar" id="ncReceiptProgressBar"></div>
-                </div>
-
-                <div class="nc-receipt-success" id="ncReceiptSuccessMsg">
-                  ✅ Receipt uploaded successfully!
-                  <br>
-                  <a id="ncReceiptViewLink" href="#" target="_blank" class="nc-receipt-view-link">
-                    🔗 View Uploaded Receipt
-                  </a>
-                </div>
-
-                <button type="button" class="upload-receipt-btn" id="ncUploadReceiptBtn"
-                        onclick="ncSubmitReceipt()" disabled>
-                  📤 Upload Payment Receipt
-                </button>
+              <!-- Payment confirmed banner (hidden until paid) -->
+              <div id="paymentConfirmedBanner" style="display:none;margin-top:1.2rem;background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:1.2rem 1.4rem;text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:.4rem;">✅</div>
+                <div style="font-size:1.1rem;font-weight:800;color:#166534;margin-bottom:.3rem;">Payment Confirmed!</div>
+                <div id="paymentConfirmedAmt" style="font-size:1.5rem;font-weight:800;color:#002060;margin-bottom:.5rem;"></div>
+                <div style="font-size:.82rem;color:#166534;">Your application has been submitted and payment recorded. NORECO I will process it shortly.</div>
               </div>
-              <!-- ── END RECEIPT UPLOAD ─────────────────────────── -->
+
 
             </div>
 
@@ -1323,7 +1190,7 @@
 <script type="module">
 
   import { db, collection, onSnapshot, addDoc, serverTimestamp, doc, updateDoc } from './firebase-config.js';
-  import { uploadFile, supabase } from './supabase-config.js';
+  import { uploadFile } from './supabase-config.js';
   import { createConnectionPaymentLink, checkPaymentRedirect, _pollUntilPaid } from './paymongo.js';
 
   /* ── AUTO-VERIFY PAYMONGO RETURN ───────────────────
@@ -1616,7 +1483,6 @@
   /* ── RECEIPT STATE ─────────────────────────────── */
   let ncApplicationId  = null;
   let ncApplicantEmail = '';
-  let ncReceiptFile    = null;
 
   window.handlePaymentClick = async function(){
     const btn = document.getElementById('submitBtn');
@@ -1675,7 +1541,7 @@
         applicantEmail,
       });
 
-      // 4. Poll in the background until paid (same pattern as bills.html)
+      // 4. Poll in background until paid (same pattern as bills.html)
       btn.innerHTML = '⏳ Waiting for payment…';
       showNcToast('💳 PayMongo opened in a new tab. Complete your payment there.', 'info');
 
@@ -1696,13 +1562,19 @@
           btn.innerHTML        = '✅ Payment Confirmed!';
           btn.style.background = '#16a34a';
           btn.disabled         = true;
+
+          // Show confirmed banner
+          const banner = document.getElementById('paymentConfirmedBanner');
+          const amtEl  = document.getElementById('paymentConfirmedAmt');
+          if (banner) banner.style.display = 'block';
+          if (amtEl)  amtEl.textContent = '₱' + Number(_fee).toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' Successfully Paid';
+
           showNcToast('✅ Payment confirmed! Your application has been submitted.', 'success');
         },
         () => {
           // ── TIMEOUT ───────────────────────────────────────────
           btn.disabled  = false;
-          btn.innerHTML = '💳 Proceed to Payment — ₱' +
-            Number(_fee).toLocaleString('en-US', { minimumFractionDigits: 2 });
+          btn.innerHTML = '💳 Proceed to Payment — ₱' + Number(_fee).toLocaleString('en-US', { minimumFractionDigits: 2 });
           showNcToast('⚠️ Payment not detected after 10 minutes. Please try again if you already paid.', 'error');
         }
       );
@@ -1712,110 +1584,6 @@
       showNcToast('⚠️ Error: ' + err.message, 'error');
       btn.disabled  = false;
       btn.innerHTML = '💳 Proceed to Payment';
-    }
-  };
-
-  /* ── RECEIPT UPLOAD LOGIC ───────────────────────── */
-  window.ncHandleDragOver = function(e){
-    e.preventDefault();
-    document.getElementById('ncReceiptDropZone').classList.add('dragover');
-  };
-  window.ncHandleDragLeave = function(){
-    document.getElementById('ncReceiptDropZone').classList.remove('dragover');
-  };
-  window.ncHandleDrop = function(e){
-    e.preventDefault();
-    document.getElementById('ncReceiptDropZone').classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) ncApplyFile(file);
-  };
-  window.ncHandleFileSelect = function(e){
-    const file = e.target.files[0];
-    if (file) ncApplyFile(file);
-  };
-
-  function ncApplyFile(file){
-    if (file.size > 5 * 1024 * 1024){
-      showNcToast('⚠️ File too large. Maximum size is 5 MB.', 'error');
-      return;
-    }
-    ncReceiptFile = file;
-    document.getElementById('ncReceiptFileName').textContent = `📄 ${file.name}`;
-    document.getElementById('ncReceiptFileName').style.display = 'block';
-    document.getElementById('ncUploadReceiptBtn').disabled = false;
-
-    if (file.type.startsWith('image/')){
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const preview = document.getElementById('ncReceiptPreview');
-        preview.src           = ev.target.result;
-        preview.style.display = 'block';
-        document.getElementById('ncReceiptDropLabel').style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  window.ncSubmitReceipt = async function(){
-    if (!ncReceiptFile){
-      showNcToast('⚠️ Please select a receipt file first.', 'error');
-      return;
-    }
-    if (!ncApplicationId){
-      showNcToast('⚠️ Please submit your application first before uploading the receipt.', 'error');
-      return;
-    }
-
-    const btn      = document.getElementById('ncUploadReceiptBtn');
-    const progress = document.getElementById('ncReceiptProgress');
-    const bar      = document.getElementById('ncReceiptProgressBar');
-    btn.disabled   = true;
-    btn.textContent = '⏳ Uploading…';
-    progress.style.display = 'block';
-
-    let pct = 0;
-    const ticker = setInterval(() => {
-      pct = Math.min(pct + 10, 85);
-      bar.style.width = pct + '%';
-    }, 150);
-
-    try {
-      const folder    = `connection-receipts/${ncApplicationId}`;
-      const publicUrl = await uploadFile(ncReceiptFile, folder);
-
-      // Save receipt reference to Supabase
-      const { error } = await supabase
-        .from('connection_receipts')
-        .upsert({
-          application_id: ncApplicationId,
-          applicant_email: ncApplicantEmail,
-          receipt_url:    publicUrl,
-          processing_mode: processingMode,
-          total_fee:       totalFee,
-          uploaded_at:    new Date().toISOString(),
-        }, { onConflict: 'application_id' });
-
-      if (error) throw error;
-
-      clearInterval(ticker);
-      bar.style.width = '100%';
-
-      document.getElementById('ncReceiptSuccessMsg').style.display = 'block';
-      document.getElementById('ncReceiptViewLink').href = publicUrl;
-      btn.textContent      = '✅ Receipt Uploaded!';
-      btn.style.background = '#16a34a';
-
-      showNcToast('✅ Receipt uploaded! NORECO I will review your payment.', 'success');
-
-    } catch(err){
-      clearInterval(ticker);
-      console.error('Receipt upload error:', err);
-      bar.style.width        = '0%';
-      progress.style.display = 'none';
-      btn.disabled           = false;
-      btn.textContent        = '📤 Upload Payment Receipt';
-      btn.style.background   = '';
-      showNcToast('⚠️ Upload failed: ' + err.message, 'error');
     }
   };
 

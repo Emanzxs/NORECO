@@ -93,84 +93,12 @@
       color:#1e40af; margin-top:.75rem; border:1px solid #bfdbfe; line-height:1.5;
     }
 
-    /* ── RECEIPT UPLOAD STYLES ─────────────────────────────────── */
-    .upload-btn {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      color: #fff; border: none; border-radius: 8px;
-      padding: .4rem .85rem; font-size: .78rem; font-weight: 700;
+    /* receipt upload styles removed */
       cursor: pointer; white-space: nowrap; transition: opacity .2s;
       display: inline-flex; align-items: center; gap: .3rem;
     }
-    .upload-btn:hover   { opacity: .85; }
-    .upload-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .receipt-badge {
-      display: inline-block; background: #ede9fe; color: #5b21b6;
-      border-radius: 999px; padding: .2rem .65rem; font-size: .72rem;
-      font-weight: 700; letter-spacing: .03em; cursor: pointer;
-      transition: background .2s;
-    }
-    .receipt-badge:hover { background: #ddd6fe; }
 
-    /* Receipt Upload Modal */
-    .receipt-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.6);
-      z-index: 700; display: flex; align-items: center;
-      justify-content: center; padding: 1rem;
-    }
-    .receipt-overlay.hidden { display: none; }
-    .receipt-box {
-      background: #fff; border-radius: 16px; width: 100%;
-      max-width: 460px; padding: 2rem;
-      box-shadow: 0 20px 60px rgba(0,0,0,.3);
-    }
-    .receipt-drop-zone {
-      border: 2px dashed #a855f7; border-radius: 12px;
-      padding: 2rem 1rem; text-align: center; cursor: pointer;
-      transition: background .2s, border-color .2s; margin: 1.25rem 0;
-      background: #faf5ff;
-    }
-    .receipt-drop-zone:hover, .receipt-drop-zone.dragover {
-      background: #ede9fe; border-color: #7c3aed;
-    }
-    .receipt-drop-zone input[type="file"] { display: none; }
-    .receipt-preview {
-      width: 100%; max-height: 200px; object-fit: contain;
-      border-radius: 8px; margin-top: .75rem; display: none;
-      border: 1px solid #e5e7eb;
-    }
-    .receipt-progress {
-      height: 6px; border-radius: 999px; background: #e5e7eb;
-      overflow: hidden; margin-top: 1rem; display: none;
-    }
-    .receipt-progress-bar {
-      height: 100%; background: linear-gradient(90deg,#7c3aed,#a855f7);
-      width: 0%; transition: width .3s ease;
-    }
-    .receipt-view-link {
-      display: inline-flex; align-items: center; gap: .4rem;
-      color: #7c3aed; font-size: .8rem; font-weight: 600;
-      text-decoration: none; margin-top: .5rem;
-    }
-    .receipt-view-link:hover { text-decoration: underline; }
 
-    /* Reference number field inside receipt modal */
-    .ref-input-wrap { margin-top: .75rem; }
-    .ref-input-wrap label {
-      display: block; font-size: .8rem; font-weight: 600;
-      color: #374151; margin-bottom: .35rem;
-    }
-    .ref-input-wrap input {
-      width: 100%; padding: .5rem .75rem; border: 1.5px solid #d1d5db;
-      border-radius: 8px; font-size: .9rem; font-family: monospace;
-      letter-spacing: .04em; color: #111827; transition: border-color .2s;
-      box-sizing: border-box;
-    }
-    .ref-input-wrap input:focus {
-      outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.12);
-    }
-    .ref-input-wrap .ref-hint {
-      font-size: .72rem; color: #94a3b8; margin-top: .3rem;
-    }
 
     @media print {
       .soa-actions { display:none; }
@@ -295,8 +223,7 @@
             <th>Status</th>
             <th>Action</th>
             <th>Payment</th>
-            <th>Receipt</th>
-          </tr>
+            </tr>
         </thead>
         <tbody id="billsBody">
           <tr><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-text"></div></td><td><div class="skeleton skeleton-badge"></div></td><td><div class="skeleton skeleton-badge"></div></td></tr>
@@ -360,67 +287,10 @@
   </div>
 </div>
 
-<!-- RECEIPT UPLOAD MODAL -->
-<div class="receipt-overlay hidden" id="receiptModal">
-  <div class="receipt-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem;">
-      <h3 style="margin:0; font-size:1.15rem;">📎 Upload Payment Receipt</h3>
-      <button class="btn btn-ghost" onclick="closeReceiptModal()" style="padding:.3rem .6rem;">✕</button>
-    </div>
     <p style="color:#64748b; font-size:.83rem; margin-bottom:0;">
       Attach your GCash, Maya, or bank transfer screenshot as proof of payment.
     </p>
 
-    <div class="receipt-drop-zone" id="receiptDropZone"
-         onclick="document.getElementById('receiptFileInput').click()"
-         ondragover="handleDragOver(event)"
-         ondragleave="handleDragLeave(event)"
-         ondrop="handleDrop(event)">
-      <input type="file" id="receiptFileInput" accept="image/*,.pdf"
-             onchange="handleFileSelect(event)">
-      <div id="receiptDropLabel">
-        <div style="font-size:2.5rem; margin-bottom:.5rem;">🖼️</div>
-        <div style="font-weight:600; color:#5b21b6; margin-bottom:.25rem;">Click or drag your receipt here</div>
-        <div style="font-size:.78rem; color:#94a3b8;">Supports: JPG, PNG, WEBP, PDF (max 5MB)</div>
-      </div>
-      <img id="receiptPreview" class="receipt-preview" alt="Receipt preview">
-    </div>
-
-    <div id="receiptFileName" style="font-size:.78rem; color:#64748b; text-align:center; display:none;"></div>
-
-    <!-- Reference Number -->
-    <div class="ref-input-wrap">
-      <label for="receiptRefNumber">📋 Payment Reference Number *</label>
-      <input type="text" id="receiptRefNumber"
-             placeholder="e.g. GC-2026051912345 or 12-digit code"
-             autocomplete="off"
-             oninput="validateRefNumber(this)">
-      <div class="ref-hint">Enter the reference / transaction number shown on your GCash, Maya, or bank receipt.</div>
-    </div>
-
-    <div class="receipt-progress" id="receiptProgress">
-      <div class="receipt-progress-bar" id="receiptProgressBar"></div>
-    </div>
-
-    <div id="receiptSuccessMsg" style="display:none; text-align:center; padding:1rem; background:#f0fdf4;
-         border-radius:8px; color:#166534; font-weight:600; margin-top:.75rem; font-size:.9rem;">
-      ✅ Receipt uploaded successfully!
-      <br>
-      <a id="receiptViewLink" href="#" target="_blank" class="receipt-view-link">
-        🔗 View Uploaded Receipt
-      </a>
-    </div>
-
-    <div style="display:flex; gap:.75rem; margin-top:1.25rem;">
-      <button class="btn btn-ghost" onclick="closeReceiptModal()" style="flex:1;">Cancel</button>
-      <button id="submitReceiptBtn" class="btn btn-blue" onclick="submitReceipt()"
-              style="flex:2; background:linear-gradient(135deg,#7c3aed,#a855f7); border:none;"
-              disabled>
-        📤 Upload Receipt
-      </button>
-    </div>
-  </div>
-</div>
 
 <footer><p>&copy; 2026 <strong>NORECO I</strong> | ElectService ECMS</p></footer>
 
@@ -430,7 +300,6 @@ import {
   db, collection, onSnapshot, doc, getDoc, getDocs, query, where,
   updateDoc, serverTimestamp
 } from './firebase-config.js';
-import { supabase } from './supabase-config.js';
 import {
   createPaymentLink, _pollUntilPaid,
   checkPaymentRedirect,
@@ -656,21 +525,6 @@ window.unlinkAccount = function() {
 function loadBills() {
   if (billsUnsub) { billsUnsub(); billsUnsub = null; }
 
-  // Load existing receipt records from Supabase (url + reference number)
-  supabase
-    .from('payment_receipts')
-    .select('bill_id, receipt_url, reference_number')
-    .eq('meter_sn', user.meterSN)
-    .then(({ data }) => {
-      if (data) {
-        receiptUrls = {};
-        data.forEach(r => {
-          receiptUrls[r.bill_id] = { url: r.receipt_url, ref: r.reference_number || '' };
-        });
-      }
-    })
-    .catch(console.error);
-
   const q = query(collection(db, 'bills'), where('meterSN', '==', user.meterSN));
 
   billsUnsub = onSnapshot(q, (snapshot) => {
@@ -700,15 +554,7 @@ function loadBills() {
              💳 Pay Now
            </button>`;
 
-      const existingReceipt = receiptUrls[b.id];
-      const receiptCell = existingReceipt
-        ? `<a href="${existingReceipt.url}" target="_blank" class="receipt-badge"
-               title="Ref: ${existingReceipt.ref || 'n/a'} — Click to view receipt">
-             📎 View Receipt
-           </a>`
-        : `<button class="upload-btn" onclick="openReceiptModal('${b.id}','${b.billMonth || b.period || 'Bill'}')">
-             📎 Upload
-           </button>`;
+
 
       return `
         <tr style="${highlight}">
@@ -720,7 +566,6 @@ function loadBills() {
           <td><span class="badge ${b.status === 'Pending' ? 'pending' : 'paid'}">${b.status || 'Pending'}</span></td>
           <td><button class="small-btn" onclick="viewSOA('${b.id}')">📄 View SOA</button></td>
           <td>${payCell}</td>
-          <td>${receiptCell}</td>
         </tr>`;
     }).join('');
 
@@ -993,163 +838,6 @@ function showPaymentToast(message, type = 'info') {
     setTimeout(() => el.remove(), 400);
   }, 5000);
 }
-
-// ── RECEIPT UPLOAD ─────────────────────────────────────────────
-let _receiptBillId    = null;
-let _receiptBillMonth = null;
-let _receiptFile      = null;
-
-window.openReceiptModal = function(billId, billMonth) {
-  _receiptBillId    = billId;
-  _receiptBillMonth = billMonth;
-  _receiptFile      = null;
-  // Reset modal state
-  document.getElementById('receiptPreview').style.display    = 'none';
-  document.getElementById('receiptDropLabel').style.display  = '';
-  document.getElementById('receiptFileName').style.display   = 'none';
-  document.getElementById('receiptSuccessMsg').style.display = 'none';
-  document.getElementById('receiptProgress').style.display   = 'none';
-  document.getElementById('receiptProgressBar').style.width  = '0%';
-  document.getElementById('receiptFileInput').value          = '';
-  document.getElementById('receiptRefNumber').value          = '';
-  document.getElementById('receiptRefNumber').style.borderColor = '';
-  document.getElementById('submitReceiptBtn').disabled       = true;
-  document.getElementById('receiptModal').classList.remove('hidden');
-};
-
-window.closeReceiptModal = function() {
-  document.getElementById('receiptModal').classList.add('hidden');
-  _receiptBillId = null; _receiptBillMonth = null; _receiptFile = null;
-};
-
-// Drag-and-drop helpers
-window.handleDragOver = function(e) {
-  e.preventDefault();
-  document.getElementById('receiptDropZone').classList.add('dragover');
-};
-window.handleDragLeave = function() {
-  document.getElementById('receiptDropZone').classList.remove('dragover');
-};
-window.handleDrop = function(e) {
-  e.preventDefault();
-  document.getElementById('receiptDropZone').classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) applyReceiptFile(file);
-};
-window.handleFileSelect = function(e) {
-  const file = e.target.files[0];
-  if (file) applyReceiptFile(file);
-};
-
-function applyReceiptFile(file) {
-  // Validate size (5 MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    showPaymentToast('⚠️ File is too large. Maximum size is 5 MB.', 'error');
-    return;
-  }
-  _receiptFile = file;
-  document.getElementById('receiptFileName').textContent = `📄 ${file.name}`;
-  document.getElementById('receiptFileName').style.display = 'block';
-  updateSubmitBtn();
-
-  // Show image preview (skip for PDF)
-  if (file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const preview = document.getElementById('receiptPreview');
-      preview.src           = e.target.result;
-      preview.style.display = 'block';
-      document.getElementById('receiptDropLabel').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
-// Enable submit only when both file AND ref number are present
-function updateSubmitBtn() {
-  const ref = document.getElementById('receiptRefNumber').value.trim();
-  document.getElementById('submitReceiptBtn').disabled = !(_receiptFile && ref.length >= 4);
-}
-
-window.validateRefNumber = function(el) {
-  updateSubmitBtn();
-  el.style.borderColor = el.value.trim().length >= 4 ? '#16a34a' : '';
-};
-
-window.submitReceipt = async function() {
-  if (!_receiptFile || !_receiptBillId) return;
-
-  const refNumber = document.getElementById('receiptRefNumber').value.trim();
-  if (refNumber.length < 4) {
-    showPaymentToast('⚠️ Please enter a valid reference number.', 'error');
-    document.getElementById('receiptRefNumber').focus();
-    return;
-  }
-
-  const btn      = document.getElementById('submitReceiptBtn');
-  const progress = document.getElementById('receiptProgress');
-  const bar      = document.getElementById('receiptProgressBar');
-  btn.disabled   = true;
-  btn.textContent = '⏳ Uploading…';
-  progress.style.display = 'block';
-
-  // Animate progress bar (simulated; Supabase JS doesn't expose upload progress)
-  let pct = 0;
-  const ticker = setInterval(() => {
-    pct = Math.min(pct + 10, 85);
-    bar.style.width = pct + '%';
-  }, 150);
-
-  try {
-    // Embed the ref number in the folder path so it's stored without needing a DB table write
-    const safeRef  = refNumber.replace(/[^a-zA-Z0-9\-_]/g, '_');
-    const folder   = `receipts/${user.meterSN}/${_receiptBillId}/ref_${safeRef}`;
-    const { uploadFile } = await import('./supabase-config.js');
-    const publicUrl = await uploadFile(_receiptFile, folder);
-
-    // ── Save receipt metadata to Firestore instead of Supabase table (no RLS issues) ──
-    const { collection: col, addDoc, serverTimestamp } = await import('./firebase-config.js');
-    await addDoc(col(db, 'payment_receipts'), {
-      bill_id:          _receiptBillId,
-      meter_sn:         user.meterSN,
-      bill_month:       _receiptBillMonth,
-      receipt_url:      publicUrl,
-      reference_number: refNumber,
-      uid:              user.uid || 'guest',
-      uploaded_at:      serverTimestamp(),
-    });
-
-    clearInterval(ticker);
-    bar.style.width = '100%';
-
-    // Update local cache so table refreshes without reload
-    receiptUrls[_receiptBillId] = { url: publicUrl, ref: refNumber };
-
-    // Show success state inside modal
-    document.getElementById('receiptSuccessMsg').style.display = 'block';
-    document.getElementById('receiptViewLink').href = publicUrl;
-    btn.textContent = '✅ Uploaded!';
-    btn.style.background = '#16a34a';
-
-    showPaymentToast('✅ Receipt uploaded successfully!', 'success');
-
-    // Refresh the bills table so the receipt badge appears
-    setTimeout(() => {
-      closeReceiptModal();
-      loadBills();
-    }, 2000);
-
-  } catch(err) {
-    clearInterval(ticker);
-    console.error('Receipt upload error:', err);
-    bar.style.width    = '0%';
-    progress.style.display = 'none';
-    btn.disabled       = false;
-    btn.textContent    = '📤 Upload Receipt';
-    btn.style.background = '';
-    showPaymentToast('⚠️ Upload failed: ' + err.message, 'error');
-  }
-};
 
 // ── INIT ───────────────────────────────────────────────────────
 boot();
