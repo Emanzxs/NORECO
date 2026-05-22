@@ -1324,7 +1324,7 @@
 
   import { db, collection, onSnapshot, addDoc, serverTimestamp, doc, updateDoc } from './firebase-config.js';
   import { uploadFile, supabase } from './supabase-config.js';
-  import { createConnectionPaymentLink, checkPaymentRedirect } from './paymongo.js';
+  import { createConnectionPaymentLink, checkPaymentRedirect, _pollUntilPaid } from './paymongo.js';
 
   /* ── AUTO-VERIFY PAYMONGO RETURN ───────────────────
      When PayMongo redirects back after checkout, detect
@@ -1663,13 +1663,11 @@
       ncApplicationId  = docRef.id;
       ncApplicantEmail = applicantEmail;
 
-      btn.innerHTML = '🔄 Redirecting to PayMongo…';
-      showNcToast('✅ Application saved! Redirecting to secure payment…', 'success');
+      btn.innerHTML = '🔄 Opening PayMongo…';
+      showNcToast('✅ Application saved! Opening secure payment in a new tab…', 'success');
 
-      // 3. Create a dynamic PayMongo payment link via API and redirect
-      //    createConnectionPaymentLink() navigates same-tab so PayMongo
-      //    can redirect back here with pm_status=paid&app_id=xxx
-      await createConnectionPaymentLink({
+      // 3. Create PayMongo link — opens in NEW TAB, user stays on this page
+      const { sessionId } = await createConnectionPaymentLink({
         amountPHP:      _fee,
         applicationId:  ncApplicationId,
         processingMode: _mode,
@@ -1677,7 +1675,37 @@
         applicantEmail,
       });
 
-      // Execution stops here — browser navigates to PayMongo checkout
+      // 4. Poll in the background until paid (same pattern as bills.html)
+      btn.innerHTML = '⏳ Waiting for payment…';
+      showNcToast('💳 PayMongo opened in a new tab. Complete your payment there.', 'info');
+
+      _pollUntilPaid(
+        sessionId,
+        async (result) => {
+          // ── PAID ──────────────────────────────────────────────
+          try {
+            await updateDoc(doc(db, 'new_connections', ncApplicationId), {
+              status:          'paid',
+              paidAt:          serverTimestamp(),
+              paymentMethod:   'PayMongo',
+              referenceNumber: result.referenceNumber || 'paymongo-auto',
+              amountPaid:      result.amount || null,
+            });
+          } catch(e) { console.error('Firestore update error:', e); }
+
+          btn.innerHTML        = '✅ Payment Confirmed!';
+          btn.style.background = '#16a34a';
+          btn.disabled         = true;
+          showNcToast('✅ Payment confirmed! Your application has been submitted.', 'success');
+        },
+        () => {
+          // ── TIMEOUT ───────────────────────────────────────────
+          btn.disabled  = false;
+          btn.innerHTML = '💳 Proceed to Payment — ₱' +
+            Number(_fee).toLocaleString('en-US', { minimumFractionDigits: 2 });
+          showNcToast('⚠️ Payment not detected after 10 minutes. Please try again if you already paid.', 'error');
+        }
+      );
 
     } catch(err) {
       console.error('Payment setup error:', err);
